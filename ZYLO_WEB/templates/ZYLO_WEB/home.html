@@ -1,0 +1,598 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="home-container">
+
+    <section class="hero-section">
+        <div class="hero-content">
+            {% if user.is_authenticated %}
+                <h1>Welcome back, {{ user.first_name|default:user.username }}</h1>
+                <p>Your personalized recommendations await</p>
+            {% else %}
+                <h1>Elevated Essentials</h1>
+                <p>Thoughtfully curated collections from independent designers</p>
+            {% endif %}
+            <a href="#" class="btn btn-primary">Discover Now</a>
+        </div>
+    </section>
+
+
+
+    <section id="featured-products" class="section-padding">
+        <div class="section-header">
+            <h2>Available Products</h2>
+            <a href="#" class="view-all">Browse All</a>
+        </div>
+        
+        <div class="product-grid">
+            {% for product in products %}
+            <div class="product-card">
+                <a href="{% url 'product_var' product.id %}" class="product-link">
+                    <div class="product-image-wrapper">
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
+                        {% if product.total_stock > 0 %}
+                            <span class="stock-badge in-stock">Available</span>
+                        {% else %}
+                            <span class="stock-badge out-of-stock">Waitlist</span>
+                        {% endif %}
+                    </div>
+                    <div class="product-info">
+                        <h3>{{ product.name }}</h3>                        
+                        <div class="variants-container">
+                            {% for variant in product.variants.all %}
+                            <div class="variant-item">
+                                <span class="variant-size">{{ variant.size }}</span>
+                                <span class="color-swatch" style="background-color: {{ variant.color_hex|default:'#cccccc' }};" title="{{ variant.color }}"></span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% empty %}
+            <p class="no-items-message">New arrivals coming soon</p>
+            {% endfor %}
+        </div>
+    </section>
+
+
+
+
+
+    <section class="categories-section section-padding">
+        <div class="section-header">
+            <h2>Shop by category</h2>
+        </div>
+        <div class="category-grid">
+            {% for category in categories %}
+            <a href="#" class="category-card">
+                <img src="{{ category.image.url }}" alt="{{ category.name }}" loading="lazy">
+                <div class="category-overlay">
+                    <p>Explore</p>
+                </div>
+            </a>
+            {% empty %}
+            <p class="no-items-message">Categories coming soon</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="stores-section section-padding">
+        <div class="section-header">
+            <h2>Our Stores</h2>
+            <a href="#" class="view-all">View All</a>
+        </div>
+        <div class="store-grid">
+            {% for store in available_stores %}
+            <div class="store-card">
+                <div class="store-header">
+                    <div class="store-logo">
+                        {% if store.storelogo %}
+                            <img src="{{ store.storelogo.image.url }}" alt="{{ store.store_name }} logo" loading="lazy">
+                        {% else %}
+                            <div class="store-initials">{{ store.store_name|slice:":1"|upper }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="store-info">
+                        <h3>{{ store.store_name }}</h3>
+                        <p class="store-location">{{ store.location|default:"Global" }}</p>
+                    </div>
+                </div>
+                <p class="store-tagline">{{ store.tagline|truncatewords:8|default:"Sustainable quality craftsmanship" }}</p>
+                <a href="#" class="btn btn-outline">View Collection</a>
+            </div>
+            {% empty %}
+            <p class="no-items-message">More designers coming soon</p>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+
+<style>
+:root {
+    /* Using your provided color scheme */
+    --primary-dark-bg: #1a202c;
+    --primary-text-color: #ffffff;
+    --accent-teal: #2dd4bf;
+    --accent-blue: #3b82f6;
+    --gradient-start: #2dd4bf;
+    --gradient-end: #3b82f6;
+    --content-bg: #ffffff;
+    --content-bg-opacity: rgba(255, 255, 255, 0.95);
+    --text-color-dark: #333333;
+    --text-color-medium: #6b7280;
+    --border-color-light: #d1d5db;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --shadow-xl: rgba(0, 0, 0, 0.25);
+    
+    /* Updated variables */
+    --primary-color: var(--accent-blue);
+    --primary-dark: #2563eb;
+    --secondary-color: var(--accent-teal);
+    --danger-color: #ef4444;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --light-color: #f9fafb;
+    --dark-color: var(--text-color-dark);
+    --gray-color: var(--text-color-medium);
+    --light-gray: var(--border-color-light);
+    --border-radius: 3px;
+    --border-radius-sm: 3px;
+    --box-shadow: 0 4px 20px var(--shadow-color);
+    --box-shadow-lg: 0 10px 25px var(--shadow-xl);
+    --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Base Styles */
+.home-container {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 24px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.section-padding {
+    padding: 80px 0;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 40px;
+}
+
+.section-header h2 {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--dark-color);
+    margin: 0;
+    letter-spacing: -0.5px;
+}
+
+.view-all {
+    color: var(--gray-color);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 400;
+    transition: var(--transition);
+}
+
+.view-all:hover {
+    color: var(--primary-color);
+}
+
+.no-items-message {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 2rem;
+    color: var(--gray-color);
+    font-size: 0.9rem;
+}
+
+/* Buttons */
+.btn {
+    display: inline-block;
+    padding: 12px 24px;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    font-weight: 400;
+    font-size: 0.9rem;
+    text-align: center;
+    transition: var(--transition);
+    cursor: pointer;
+    letter-spacing: 0.5px;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: var(--primary-text-color);
+    border: 1px solid var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+    box-shadow: var(--box-shadow);
+}
+
+.btn-outline {
+    background-color: transparent;
+    color: var(--primary-color);
+    border: 1px solid var(--light-gray);
+}
+
+.btn-outline:hover {
+    background-color: var(--light-color);
+    box-shadow: var(--box-shadow);
+}
+
+/* Hero Section */
+.hero-section {
+    background-color: var(--light-color);
+    color: var(--dark-color);
+    padding: 120px 0;
+    text-align: center;
+    margin: 40px 0;
+    border-radius: var(--border-radius);
+}
+
+.hero-content h1 {
+    font-size: 2.5rem;
+    font-weight: 500;
+    margin-bottom: 16px;
+    letter-spacing: -1px;
+    color: var(--dark-color);
+}
+
+.hero-content p {
+    font-size: 1.1rem;
+    color: var(--gray-color);
+    margin-bottom: 32px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+/* Wider Product Grid Styles */
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 30px;
+    padding: 8px;
+}
+
+.product-card {
+    background-color: var(--content-bg);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    transition: var(--transition);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    position: relative;
+    width: 100%;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.product-image-wrapper {
+    position: relative;
+    aspect-ratio: 4/4;
+    overflow: hidden;
+}
+
+.product-card img {
+    width: 300px;
+    height: 300px;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.product-card:hover img {
+    transform: scale(1.05);
+}
+
+.product-info {
+    padding: 18px;
+}
+
+.product-info h3 {
+    font-size: 1rem;
+    font-weight: 500;
+    margin: 0 0 8px 0;
+    color: var(--dark-color);
+    line-height: 1.4;
+}
+
+
+/* Variants Display */
+.variants-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.variant-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--light-color);
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    border: 1px solid var(--light-gray);
+}
+
+.variant-size {
+    font-weight: 500;
+    color: var(--dark-color);
+}
+
+.color-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.1);
+    flex-shrink: 0;
+}
+
+/* Stock Badge */
+.stock-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: white;
+    z-index: 2;
+}
+
+
+.in-stock {
+    background-color: var(--success-color);
+}
+
+.out-of-stock {
+    background-color: var(--danger-color);
+}
+
+
+/* Category Grid */
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+}
+
+.category-card {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    transition: transform 0.2s ease;
+    border-radius: var(--border-radius);
+}
+
+.category-card:hover {
+    transform: translateY(-4px);
+}
+
+.category-card img {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    display: block;
+}
+
+.category-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 24px;
+    background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+    color: var(--primary-text-color);
+}
+
+.category-overlay h3 {
+    margin: 0 0 4px 0;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.category-overlay p {
+    margin: 0;
+    font-size: 0.85rem;
+    opacity: 0.9;
+}
+
+/* Store Grid */
+.store-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+}
+
+.store-card {
+    background-color: var(--content-bg);
+    padding: 24px;
+    border: 1px solid var(--light-gray);
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+}
+
+.store-card:hover {
+    border-color: var(--border-color-light);
+    box-shadow: var(--box-shadow);
+}
+
+.store-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.store-logo {
+    flex-shrink: 0;
+}
+
+.store-logo img {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--border-radius);
+    object-fit: cover;
+}
+
+.store-initials {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: var(--primary-text-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+
+.store-info h3 {
+    margin: 0 0 4px 0;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--dark-color);
+}
+
+.store-location {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--gray-color);
+}
+
+.store-tagline {
+    color: var(--gray-color);
+    font-size: 0.9rem;
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .home-container {
+        padding: 0 16px;
+    }
+    
+    .section-padding {
+        padding: 60px 0;
+    }
+    
+    .hero-section {
+        padding: 80px 0;
+        margin: 24px 0;
+    }
+    
+    .hero-content h1 {
+        font-size: 2rem;
+    }
+    
+    .product-grid, .category-grid, .store-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 16px;
+    }
+    
+    .product-card img, .category-card img {
+        height: 240px;
+    }
+}
+
+@media (max-width: 480px) {
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .product-grid, .category-grid, .store-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .product-card img {
+        height: 200px;
+    }
+    
+    .category-card img {
+        height: 180px;
+    }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 16px;
+    }
+    
+    .product-info h3 {
+        font-size: 0.85rem;
+    }
+    
+    .variant-item {
+        padding: 3px 6px;
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .product-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+/* Responsive Adjustments */
+@media (max-width: 1024px) {
+    .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
+    }
+    
+    .product-info {
+        padding: 14px;
+    }
+    
+    .product-info h3 {
+        font-size: 0.9rem;
+    }
+    
+    .price {
+        font-size: 0.9rem;
+    }
+    
+    .variant-item {
+        padding: 4px 8px;
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 16px;
+    }
+}
+
+</style>
+{% endblock %}

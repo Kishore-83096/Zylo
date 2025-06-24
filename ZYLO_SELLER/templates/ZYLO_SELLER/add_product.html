@@ -1,0 +1,240 @@
+{% extends 'base/baseseller.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Root CSS Variables */
+    :root {
+        --primary-brand-dark: #2c3e50; /* Deep Slate Blue */
+        --primary-brand-light: #34495e; /* Slightly lighter Slate Blue */
+        --accent-gold: #f39c12; /* Goldenrod */
+        --accent-emerald: #27ae60; /* Emerald Green for success/highlights */
+        --text-dark: #2c3e50; /* Dark text for content */
+        --text-medium: #7f8c8d; /* Medium gray for secondary text */
+        --text-light: #ecf0f1; /* Light gray for primary brand areas */
+        --background-light: #f4f6f9; /* Light background for content areas */
+        --border-light: #dde2e6; /* Light border color */
+        --shadow-subtle: rgba(0, 0, 0, 0.08);
+        --shadow-moderate: rgba(0, 0, 0, 0.15);
+
+        /* Layout Dimensions - Not directly used in this single file, but good for reference */
+        --header-height: 64px;
+        --footer-height: 50px;
+        --sidebar-mini-width: 70px;
+        --sidebar-expanded-width: 240px;
+        --content-margin: 25px;
+        --content-padding: 25px;
+        --content-mobile-padding: 15px;
+    }
+
+    /* Tailwind-like classes using CSS variables */
+    .bg-background-light { background-color: var(--background-light); }
+    .text-primary-brand-dark { color: var(--primary-brand-dark); }
+    .text-text-dark { color: var(--text-dark); }
+    .text-text-medium { color: var(--text-medium); }
+    .border-border-light { border-color: var(--border-light); }
+    .bg-accent-emerald { background-color: var(--accent-emerald); }
+    .bg-primary-brand-light { background-color: var(--primary-brand-light); }
+    .bg-accent-gold { background-color: var(--accent-gold); }
+    .hover\:bg-opacity-90:hover { background-color: rgba(243, 156, 18, 0.9); } /* 90% opacity of accent-gold */
+    .focus\:ring-primary-brand-light:focus { --tw-ring-color: var(--primary-brand-light); }
+    .focus\:border-primary-brand-light:focus { border-color: var(--primary-brand-light); }
+    .focus\:ring-accent-gold:focus { --tw-ring-color: var(--accent-gold); }
+
+    /* Basic Tailwind utility classes (replace with actual Tailwind if integrated) */
+    .min-h-screen { min-height: 100vh; }
+    .py-10 { padding-top: 2.5rem; padding-bottom: 2.5rem; }
+    .px-4 { padding-left: 1rem; padding-right: 1rem; }
+    .sm\:px-6 { padding-left: 1.5rem; padding-right: 1.5rem; } /* sm breakpoint */
+    .lg\:px-8 { padding-left: 2rem; padding-right: 2rem; } /* lg breakpoint */
+    .max-w-3xl { max-width: 48rem; }
+    .mx-auto { margin-left: auto; margin-right: auto; }
+    .bg-white { background-color: #fff; }
+    .p-8 { padding: 2rem; }
+    .rounded-lg { border-radius: 0.5rem; }
+    .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+    .border { border-width: 1px; }
+    .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+    .font-bold { font-weight: 700; }
+    .mb-6 { margin-bottom: 1.5rem; }
+    .mb-8 { margin-bottom: 2rem; }
+    .text-center { text-align: center; }
+    .mb-4 { margin-bottom: 1rem; }
+    .mb-6 { margin-bottom: 1.5rem; }
+    .space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.75rem; }
+    .p-3 { padding: 0.75rem; }
+    .p-4 { padding: 1rem; }
+    .mb-2 { margin-bottom: 0.5rem; }
+    .rounded-md { border-radius: 0.375rem; }
+    .text-white { color: #fff; }
+    .bg-red-600 { background-color: #dc2626; }
+    .shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+    .space-y-5 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.25rem; }
+    .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.5rem; }
+    .block { display: block; }
+    .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+    .font-semibold { font-weight: 600; }
+    .text-red-500 { color: #ef4444; }
+    .mt-1 { margin-top: 0.25rem; }
+    .w-full { width: 100%; }
+    .transition { transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+    .duration-300 { transition-duration: 300ms; }
+    .ease-in-out { transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+    .hover\:shadow-lg:hover { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+    .focus\:outline-none:focus { outline: 2px solid transparent; outline-offset: 2px; }
+    .focus\:ring-2:focus { --tw-ring-offset-width: 0px; --tw-ring-offset-color: #fff; --tw-ring-color: rgba(59, 130, 246, 0.5); --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color); --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color); box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000); }
+    .focus\:ring-opacity-75:focus { --tw-ring-opacity: 0.75; }
+    .sm\:text-sm { font-size: 0.875rem; line-height: 1.25rem; } /* sm breakpoint */
+
+    /* Image Preview Specific Styles */
+    .image-preview-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 150px; /* Adjust as needed */
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border: 1px dashed var(--border-light);
+        border-radius: 0.375rem;
+        background-color: var(--background-light);
+        overflow: hidden;
+    }
+
+    .image-preview {
+        max-width: 100%;
+        max-height: 200px; /* Adjust as needed */
+        display: block;
+        object-fit: contain; /* Ensures the whole image is visible */
+    }
+</style>
+
+<div class="min-h-screen bg-background-light py-10 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-lg border border-border-light">
+        <h1 class="text-3xl font-bold text-primary-brand-dark mb-8 text-center">Add New Product</h1>
+
+        {% if messages %}
+            <ul class="mb-6 space-y-3">
+                {% for message in messages %}
+                    <li class="p-4 rounded-md {% if message.tags == 'success' %}bg-accent-emerald text-white{% elif message.tags == 'error' %}bg-red-600 text-white{% else %}bg-primary-brand-light text-white{% endif %} shadow-md">
+                        {{ message }}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %} {# Django's CSRF token for security #}
+
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}" class="block text-text-dark text-sm font-semibold mb-2">
+                        {{ field.label }}
+                        {% if field.field.required %}
+                            <span class="text-red-500">*</span>
+                        {% endif %}
+                    </label>
+                    {{ field }} {# Renders the Django form field with its widgets #}
+                    {% if field.name == 'image' %}
+                        <div class="image-preview-container">
+                            <img id="image-preview" class="image-preview" src="#" alt="Image Preview" style="display: none;">
+                        </div>
+                    {% endif %}
+                    {% if field.help_text %}
+                        <p class="text-text-medium text-xs mt-1">{{ field.help_text }}</p>
+                    {% endif %}
+                    {% for error in field.errors %}
+                        <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+            <button type="button" class="w-full bg-primary-brand-light text-white p-3 rounded-md font-semibold hover:bg-opacity-90 transition duration-300 ease-in-out shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary-brand-light focus:ring-opacity-75" onclick="window.location.href='{% url 'product_management' %}'">
+                Cancel
+            </button>
+
+            <button type="submit" class="w-full bg-accent-gold text-white p-3 rounded-md font-semibold hover:bg-opacity-90 transition duration-300 ease-in-out shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-accent-gold focus:ring-opacity-75">
+                Add Product
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const categoryField = document.getElementById('id_category');
+        const subcategoryField = document.getElementById('id_subcategory');
+        const imageInputField = document.getElementById('id_image'); // Assuming your image field's ID is 'id_image'
+        const imagePreview = document.getElementById('image-preview');
+
+        // Add styling classes to Django-rendered form inputs
+        const formFields = document.querySelectorAll('.form-group input, .form-group select, .form-group textarea');
+        formFields.forEach(field => {
+            // Apply standard input styles
+            field.classList.add('mt-1', 'block', 'w-full', 'p-3', 'border', 'border-border-light', 'rounded-md', 'shadow-sm', 'sm:text-sm', 'text-text-dark', 'bg-white');
+            // Apply focus styles
+            field.classList.add('focus:ring-primary-brand-light', 'focus:border-primary-brand-light');
+        });
+
+        // --- Image Preview Logic ---
+        if (imageInputField && imagePreview) {
+            imageInputField.addEventListener('change', function (event) {
+                const file = event.target.files[0];
+                if (file) {
+                    imagePreview.src = URL.createObjectURL(file);
+                    imagePreview.style.display = 'block'; // Show the image
+                    imagePreview.onload = function() {
+                        URL.revokeObjectURL(imagePreview.src); // Clean up memory
+                    }
+                } else {
+                    imagePreview.src = '#';
+                    imagePreview.style.display = 'none'; // Hide if no file is selected
+                }
+            });
+        }
+        // --- End Image Preview Logic ---
+
+
+        // Initial check for subcategories if a category is already selected (e.g., after a form submission error)
+        if (categoryField && categoryField.value) {
+            loadSubcategories(categoryField.value);
+        }
+
+        if (categoryField) {
+            categoryField.addEventListener('change', function () {
+                const categoryId = this.value;
+                loadSubcategories(categoryId);
+            });
+        }
+
+        function loadSubcategories(categoryId) {
+            if (subcategoryField) {
+                subcategoryField.innerHTML = '<option value="">Loading...</option>';
+
+                if (categoryId) {
+                    fetch(`/sell_zylo/load-subcategories/?category_id=${categoryId}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            subcategoryField.innerHTML = '<option value="">Select a subcategory</option>';
+                            data.forEach(subcategory => {
+                                const option = document.createElement('option');
+                                option.value = subcategory.id;
+                                option.textContent = subcategory.name;
+                                subcategoryField.appendChild(option);
+                            });
+                        })
+                        .catch(error => {
+                            console.error('Error loading subcategories:', error);
+                            subcategoryField.innerHTML = '<option value="">Error loading subcategories</option>';
+                        });
+                } else {
+                    subcategoryField.innerHTML = '<option value="">Select a category first</option>';
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,202 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block content %}
+<title>{{ page_title|default:"Become a Zylo Seller" }}</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+    :root {
+        --primary-dark-bg: #1a202c;
+        --primary-text-color: #ffffff;
+        --accent-teal: #2dd4bf;
+        --accent-blue: #3b82f6;
+        --gradient-start: #2dd4bf;
+        --gradient-end: #3b82f6;
+        --content-bg: #ffffff;
+        --content-bg-opacity: rgba(255, 255, 255, 0.95);
+        --text-color-dark: #333333;
+        --text-color-medium: #6b7280;
+        --border-color-light: #d1d5db;
+        --shadow-color: rgba(0, 0, 0, 0.1);
+        --shadow-xl: rgba(0, 0, 0, 0.25);
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'Poppins', sans-serif;
+        color: var(--primary-dark-bg); /* Headings darker for contrast against light content-bg */
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.6rem;
+        font-weight: 600;
+        color: var(--text-color-dark);
+        font-size: 0.95rem;
+    }
+
+    .form-control {
+        display: block;
+        width: 100%;
+        padding: 0.85rem 1.1rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: var(--text-color-dark);
+        background-color: #f9fafb;
+        background-clip: padding-box;
+        border: 1px solid var(--border-color-light);
+        border-radius: 0.6rem;
+        transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+
+    .form-control:focus {
+        border-color: var(--accent-blue);
+        outline: 0;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2); /* Using accent-blue */
+        background-color: var(--content-bg);
+    }
+
+    .errorlist {
+        color: #ef4444; /* Using a vibrant red for errors */
+        list-style-type: none;
+        padding-left: 0;
+        margin-top: 0.4rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .form-control.is-invalid {
+        border-color: #ef4444;
+    }
+
+    input[type="file"] {
+        @apply p-2 border border-gray-300 rounded-md bg-white text-gray-700;
+    }
+
+    .form-group input[type="checkbox"] + label,
+    .form-group input[type="radio"] + label {
+        display: inline-block;
+        margin-left: 0.5rem;
+        font-weight: 400;
+        color: var(--text-color-dark);
+    }
+</style>
+
+<div class="form-container">
+    <h2 class="text-5xl font-extrabold text-center mb-6 leading-tight tracking-tight">
+        {{ page_title|default:"Become a Zylo Seller" }} {# Removed extra_data #}
+    </h2>
+    <p class="text-center mb-10 text-xl max-w-prose mx-auto" style="color: var(--text-color-medium);">
+        {{ welcome_message|default:"Join our thriving marketplace! Complete the form below to register your store and start selling." }} {# Removed extra_data #}
+    </p>
+
+    {% if first_name %} {# Changed from extra_data.first_name #}
+        <div class="mb-10 p-7 bg-gradient-to-br from-teal-50 to-blue-50 border border-teal-200 rounded-2xl shadow-lg flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6">
+            {% if profile_picture %} {# Changed from extra_data.profile_picture #}
+                {% if profile_picture.image %} {# Added check for profile_picture.image, removed extra_data..image.url typo #}
+                    <img src="{{ profile_picture.image.url }}" alt="Profile Picture" class="w-20 h-20 rounded-full object-cover border-4 border-teal-400 shadow-md">
+                {% else %}
+                    <div class="w-20 h-20 rounded-full bg-teal-100 flex items-center justify-center border-4 border-teal-400 shadow-md">
+                        <svg class="w-14 h-14 text-teal-500" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM12 12.5c-3.314 0-6-2.686-6-6s2.686-6 6-6 6 2.686 6 6-2.686 6-6 6z"></path>
+                        </svg>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="w-20 h-20 rounded-full bg-teal-100 flex items-center justify-center border-4 border-teal-400 shadow-md">
+                    <svg class="w-14 h-14 text-teal-500" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM12 12.5c-3.314 0-6-2.686-6-6s2.686-6 6-6 6 2.686 6 6-2.686 6-6 6z"></path>
+                    </svg>
+                </div>
+            {% endif %}
+            <div class="text-center sm:text-left">
+                <p class="text-3xl font-bold" style="color: var(--primary-dark-bg);">Welcome, {{ first_name }} {{ last_name }}!</p> {# Changed from extra_data.first_name/last_name #}
+                {% if is_superuser %} {# Changed from extra_data.is_superuser #}
+                    <p class="text-base font-medium mt-1" style="color: var(--accent-blue);">You are logged in as a **Superuser**.</p>
+                {% endif %}
+                <p class="text-lg mt-2" style="color: var(--text-color-dark);">Ready to become a valued seller on Zylo? Continue your registration below.</p>
+            </div>
+        </div>
+    {% else %}
+        <div class="mb-10 p-6 bg-yellow-50 border border-yellow-200 rounded-xl text-yellow-800 text-center shadow-md">
+            <p class="text-lg leading-relaxed">
+                You are not currently logged in. To associate your user profile with your seller account, please
+                <a href="/accounts/login/" class="font-semibold hover:underline transition duration-200 ease-in-out" style="color: var(--accent-blue);">log in here</a> first.
+            </p>
+        </div>
+    {% endif %}
+
+    {% if features_list %} {# Changed from extra_data.features_list #}
+        <div class="mb-10 p-7 rounded-2xl shadow-lg" style="background-color: var(--content-bg); border: 1px solid var(--border-color-light);">
+            <h3 class="text-3xl font-semibold mb-5 text-center" style="color: var(--accent-teal);">Why Sell with Zylo?</h3>
+            <ul class="list-disc list-inside space-y-3 text-lg pl-5" style="color: var(--text-color-dark);">
+                {% for feature in features_list %} {# Changed from extra_data.features_list #}
+                    <li class="flex items-start">
+                        <svg class="w-6 h-6 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="color: var(--accent-teal);">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span>{{ feature }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" class="space-y-8">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="bg-red-100 border border-red-400 text-red-700 px-5 py-4 rounded-lg relative" role="alert">
+                <strong class="font-bold block mb-2">Registration Error:</strong>
+                <ul class="mt-1 list-disc list-inside">
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">
+                    {{ field.label }}
+                    {% if field.field.required %}<span class="text-red-500 text-lg ml-1">*</span>{% endif %}
+                </label>
+                {{ field.as_widget }}
+                
+                {% if field.help_text %}
+                    <p class="text-sm mt-2 leading-relaxed" style="color: var(--text-color-medium);">{{ field.help_text }}</p>
+                {% endif %}
+                {% for error in field.errors %}
+                    <p class="errorlist">{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endfor %}
+
+        <button type="submit" class="w-full flex justify-center py-4 px-4 border border-transparent rounded-lg shadow-xl text-2xl font-bold text-white transition duration-300 ease-in-out transform hover:scale-105" style="background: linear-gradient(to right, var(--accent-teal), var(--accent-blue)); hover:background: linear-gradient(to right, #25c0af, #3070e0);">
+            Register Your Store
+        </button>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const formInputs = document.querySelectorAll('.form-group input, .form-group select, .form-group textarea');
+        formInputs.forEach(input => {
+            if (input.type !== 'checkbox' && input.type !== 'radio' && input.type !== 'file') {
+                input.classList.add('form-control');
+            } else if (input.type === 'file') {
+                input.classList.add('p-2', 'border', 'border-gray-300', 'rounded-md', 'bg-white', 'text-gray-700');
+            }
+
+            const errorList = input.closest('.form-group').querySelector('.errorlist');
+            if (errorList && errorList.children.length > 0) {
+                input.classList.add('is-invalid');
+            }
+        });
+    });
+</script>
+{% endblock %}

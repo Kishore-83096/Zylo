@@ -1,0 +1,28 @@
+# Ignore Python bytecode
+__pycache__/
+*.py[cod]
+
+# Ignore virtual environment folders
+venv/
+env/
+
+# Ignore MySQL dumps
+*.sql
+
+# Ignore Django stuff
+*.log
+static/
+media/
+
+# VSCode settings
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Ignore database files (optional)
+db.sqlite3
+
+# Ignore secrets file
+local_settings.py

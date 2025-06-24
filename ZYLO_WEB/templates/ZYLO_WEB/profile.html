@@ -1,0 +1,1185 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% block content %}
+<title>My Profile - E-commerce</title>
+
+{# Display Django messages #}
+{% if messages %}
+<div class="messages-container">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+        <button type="button" class="close-alert" aria-label="Close">&times;</button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="profile-picture-container">
+            {% if profile_picture.image %}
+                <img src="{{ profile_picture.image.url }}" alt="{{ user_name }}'s Profile Picture" class="profile-img">
+            {% else %}
+                <img src="{% static 'profile_pics/default.jpg' %}" alt="Default Profile Picture" class="profile-img">
+            {% endif %}
+            <button class="edit-pic-btn" type="button" aria-label="Edit profile picture" onclick="openPicModal()">
+                <i class="fas fa-camera"></i>
+            </button>
+        </div>
+        <div class="profile-header-info">
+            <h1 id="profile-name">{{ first_name }} {{ last_name }}</h1>
+                <p class="username">@{{ user_name }}</p>
+                <div class="profile-actions">
+                    {% if user_is_seller %}
+                        {% if is_store_approved %}
+                        {# If the user is an approved seller #}
+                        <a href="{% url 'store' %}" class="action-button seller-btn registered-seller-btn">
+                        <i class="fas fa-store"></i> Visit {{ store_name }}
+                        </a>
+                        {% else %}
+                        {# If the user has registered as a seller but is not approved yet #}
+                        <a href="{% url 'registration_done' %}" class="action-button seller-btn registered-seller-btn">
+                        <i class="fas fa-store"></i> Already Registered as Seller
+                        </a>
+                        {% endif %}
+                    {% else %}
+                        {# If the user is not yet a seller #}
+                        <a href="{% url 'sellerreg' %}" class="action-button seller-btn">
+                        <i class="fas fa-store"></i> Become a Seller
+                        </a>
+                    {% endif %}
+                    <a href="#" class="action-button subscription-btn">
+                        <i class="fas fa-star"></i> Buy Subscription
+                    </a>
+                </div>
+            </div>
+    </div>
+
+    <div class="profile-content">
+        <div class="profile-section">
+            <div class="section-header">
+                <h2><i class="fas fa-user-circle"></i> Personal Information</h2>
+                <button class="edit-btn" type="button" onclick="openProfileModal()">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="label">First Name</span>
+                    <span class="value" id="first-name">{{ first_name }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Last Name</span>
+                    <span class="value" id="last-name">{{ last_name }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Username</span>
+                    <span class="value" id="username">{{ user_name }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-section">
+            <div class="section-header">
+                <h2><i class="fas fa-address-book"></i> Contact Information</h2>
+                <button class="edit-btn" type="button" onclick="openContactInfoModal()">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="label">Email</span>
+                    <span class="value">{{ contact_information.email|default:"Not provided" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Phone</span>
+                    <span class="value">{{ contact_information.phone_number|default:"Not provided" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Location</span>
+                    <span class="value">{{ contact_information.location|default:"Not provided" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-section">
+            <div class="section-header">
+                <h2><i class="fas fa-map-marker-alt"></i> Saved Addresses</h2>
+                <button class="add-btn" type="button" onclick="openAddAddressModal()">
+                    <i class="fas fa-plus"></i> Add New
+                </button>
+            </div>
+            
+            {% if saved_addresses %}
+                <div class="cards-container">
+                    {% for address in saved_addresses %}
+                    <div class="card address-card">
+                        <div class="card-header">
+                            <span class="card-type">{{ address.get_address_type_display }}</span>
+                            {% if address.is_default %}<span class="default-badge">Default</span>{% endif %}
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">Street : {{ address.street_address }}</p>
+                            <p class="card-text">Phone Number : {{address.phone_number}}</p>
+                            <p class="card-text">Address : {{ address.city }}{% if address.state %}, {{ address.state }}{% endif %}</p>
+                            <p class="card-text">
+                                {% if address.zip_code %}Zip Code : {{ address.zip_code }}{% endif %}
+                                Country : {{ address.country }}
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            <button class="action-btn edit" onclick="openEditAddressModal(
+                                '{{ address.id }}',
+                                '{{ address.address_type }}',
+                                '{{ address.street_address|escapejs }}',
+                                '{{ address.city|escapejs }}',
+                                '{% if address.state %}{{ address.state|escapejs }}{% endif %}',
+                                '{% if address.zip_code %}{{ address.zip_code|escapejs }}{% endif %}',
+                                '{{ address.country|escapejs }}',
+                                '{{ address.phone_number|default_if_none:''|escapejs }}' {# <-- ADDED THIS LINE! #}
+                            )">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <form method="POST" action="{% url 'delete_saved_address' address.id %}" class="delete-form">
+                                {% csrf_token %}
+                                <button type="submit" class="action-btn delete" onclick="return confirm('Are you sure you want to delete this address?')">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-map-marked-alt empty-icon"></i>
+                    <p>No addresses saved yet</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="profile-section">
+            <div class="section-header">
+                <h2><i class="far fa-credit-card"></i> Saved Payment Methods</h2>
+                <button class="add-btn" type="button" onclick="openAddCardModal()">
+                    <i class="fas fa-plus"></i> Add New
+                </button>
+            </div>
+            
+            {% if saved_cards %}
+                <div class="cards-container">
+                    {% for card in saved_cards %}
+                    <div class="card payment-card">
+                        <div class="card-header">
+                            <span class="card-brand">{{ card.get_card_brand_display }}</span>
+                            {% if card.is_default %}<span class="default-badge">Default</span>{% endif %}
+                        </div>
+                        <div class="card-body">
+                            <p class="card-nickname">{{ card.card_nickname }}</p>
+                            <p class="card-number">•••• •••• •••• {{ card.last_four_digits }}</p>
+                            <div class="card-details">
+                                <span class="expiry">Exp: {{ card.get_display_expiration }}</span>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button class="action-btn edit" onclick="openEditCardModal(
+                                '{{ card.id }}',
+                                '{{ card.card_nickname|escapejs }}',
+                                '{{ card.last_four_digits|escapejs }}',
+                                '{{ card.expiration_month }}',
+                                '{{ card.expiration_year }}',
+                                '{{ card.card_brand }}',
+                                '{% if card.is_default %}true{% else %}false{% endif %}'
+                            )">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <form method="POST" action="{% url 'delete_saved_card' card.id %}" class="delete-form">
+                                {% csrf_token %}
+                                <button type="submit" class="action-btn delete" onclick="return confirm('Are you sure you want to delete this card?')">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="far fa-credit-card empty-icon"></i>
+                    <p>No payment methods saved yet</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{# Modals #}
+<div id="editProfileModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeProfileModal()">&times;</span>
+        <h2><i class="fas fa-user-edit"></i> Edit Profile Information</h2>
+        <div class="modal-body">
+            <form method="POST" action="{% url 'profile_edit' %}">
+                {% csrf_token %}
+                {{ user_form.as_p }}
+                <div class="modal-footer">
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="editPicModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closePicModal()">&times;</span>
+        <h2><i class="fas fa-camera-retro"></i> Change Profile Picture</h2>
+
+        <div class="modal-body">
+            {% if profile_picture.image %}
+                <div class="mb-4 text-center">
+                    <label class="block text-sm font-medium text-gray-700">Current Picture:</label>
+                    <img src="{{ profile_picture.image.url }}" alt="Profile Picture"
+                            class="w-24 h-24 mx-auto rounded-full object-cover mt-2 border border-gray-300">
+                </div>
+            {% endif %}
+
+            <form method="POST" action="{% url 'profile_picture_edit' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="mb-4">
+                    <label for="id_image" class="block text-sm font-medium text-gray-700">Select New Picture:</label>
+                    <input type="file" name="image" id="id_image" accept="image/*"
+                            class="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-lavender-500">
+                </div>
+
+                <div id="preview-container" class="mb-4 text-center hidden">
+                    <label class="block text-sm font-medium text-gray-700">Selected Picture Preview:</label>
+                    <img id="preview-image" class="w-24 h-24 mx-auto rounded-full object-cover mt-2 border border-blue-400">
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-upload"></i> Upload Picture
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="editContactInfoModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeContactInfoModal()">&times;</span>
+        <h2><i class="fas fa-address-book"></i> Edit Contact Information</h2>
+        <div class="modal-body">
+            <form method="POST" action="{% url 'contact_info_edit' %}">
+                {% csrf_token %}
+                {{ contact_info_form.as_p }}
+                <div class="modal-footer">
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="addAddressModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeAddAddressModal()">&times;</span>
+        <h2><i class="fas fa-map-marker-plus"></i> Add New Address</h2>
+        <div class="modal-body">
+            <form method="POST" action="{% url 'add_saved_address' %}">
+                {% csrf_token %}
+                {{ saved_address_form.as_p }}
+                <div class="modal-footer">
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-save"></i> Save Address
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="editAddressModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeEditAddressModal()">&times;</span>
+        <h2><i class="fas fa-map-marked-alt"></i> Edit Address</h2>
+        <div class="modal-body">
+            <form method="POST" id="editAddressForm">
+                {% csrf_token %}
+                {{ saved_address_form.as_p }}
+                <div class="modal-footer">
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-save"></i> Update Address
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="addCardModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeAddCardModal()">&times;</span>
+        <h2><i class="fas fa-credit-card"></i> Add New Card</h2>
+        <div class="modal-body">
+            <form method="POST" action="{% url 'add_saved_card' %}">
+                {% csrf_token %}
+                {{ saved_card_form.as_p }}
+                <div class="modal-footer">
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-save"></i> Save Card
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="editCardModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeEditCardModal()">&times;</span>
+        <h2><i class="fas fa-credit-card"></i> Edit Card</h2>
+        <div class="modal-body">
+            <form method="POST" id="editCardForm">
+                {% csrf_token %}
+                {{ saved_card_form.as_p }}
+                <div class="modal-footer">
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-save"></i> Update Card
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<style>
+    :root {
+    --primary-dark-bg: #1a202c;
+    --primary-text-color: #ffffff;
+    --accent-teal: #2dd4bf;
+    --accent-blue: #3b82f6;
+    --gradient-start: #2dd4bf;
+    --gradient-end: #3b82f6;
+    --content-bg: #ffffff;
+    --content-bg-opacity: rgba(255, 255, 255, 0.95);
+    --text-color-dark: #333333;
+    --text-color-medium: #6b7280;
+    --border-color-light: #d1d5db;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --shadow-xl: rgba(0, 0, 0, 0.25);
+    --sidebar-bg: var(--primary-dark-bg);
+    --sidebar-item-color: var(--primary-text-color);
+    --sidebar-hover-bg: rgba(255, 255, 255, 0.1);
+    --sidebar-active-color: var(--accent-teal);
+    --logout-btn-bg: #ef4444;
+    --logout-btn-hover-bg: #dc2626;
+    
+    /* Updated variables */
+    --primary-color: var(--accent-blue);
+    --primary-dark: #2563eb;
+    --secondary-color: var(--accent-teal);
+    --danger-color: var(--logout-btn-bg);
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --light-color: #f9fafb;
+    --dark-color: var(--text-color-dark);
+    --gray-color: var(--text-color-medium);
+    --light-gray: var(--border-color-light);
+    --border-radius: 3px;
+    --border-radius-sm: 3px;
+    --box-shadow: 0 4px 20px var(--shadow-color);
+    --box-shadow-lg: 0 10px 25px var(--shadow-xl);
+    --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Profile Styles */
+.profile-header {
+    display: flex;
+    align-items: center;
+    padding: 2.5rem;
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+    color: var(--primary-text-color);
+    position: relative;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+}
+
+.profile-picture-container {
+    position: relative;
+    margin-right: 2.5rem;
+    flex-shrink: 0;
+}
+
+.profile-img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 5px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    transition: var(--transition);
+}
+
+.profile-img:hover {
+    transform: scale(1.03);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+}
+
+.edit-pic-btn {
+    position: absolute;
+    bottom: 5px; /* Closer to the edge */
+    right: 5px; /* Closer to the edge */
+    background: rgba(255, 255, 255, 0.7); /* Semi-transparent background */
+    color: var(--primary-color);
+    border: none;
+    border-radius: 50%; /* Make it circular */
+    width: 30px; /* Smaller width */
+    height: 30px; /* Smaller height */
+    padding: 0; /* No extra padding */
+    font-size: 0.7rem; /* Smaller font size */
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); /* Smaller shadow */
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Center the icon */
+    gap: 0; /* No gap */
+    opacity: 0; /* Initially hidden */
+    transform: scale(0.8); /* Start a bit smaller */
+}
+
+.profile-picture-container:hover .edit-pic-btn {
+    opacity: 1; /* Fade in on hover */
+    transform: scale(1); /* Scale up on hover */
+}
+
+.edit-pic-btn:hover {
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.edit-pic-btn i {
+    font-size: 0.8rem; /* Smaller icon */
+}
+
+.profile-header-info {
+    flex: 1;
+}
+
+#profile-name {
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.username {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.action-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.seller-btn {
+    background-color: var(--success-color);
+    color: var(--primary-text-color);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.seller-btn:hover {
+    background-color: #059669;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+}
+
+.subscription-btn {
+    background-color: var(--warning-color);
+    color: var(--primary-text-color);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.subscription-btn:hover {
+    background-color: #d97706;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+}
+
+.profile-content {
+    padding: 2rem 2.5rem;
+}
+
+.profile-section {
+    margin-bottom: 2.5rem;
+    background: var(--content-bg);
+    border-radius: var(--border-radius-sm);
+    padding: 1.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--light-gray);
+    transition: var(--transition);
+}
+
+.profile-section:hover {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    border-color: rgba(0, 0, 0, 0.05);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--light-gray);
+}
+
+.section-header h2 {
+    font-size: 1.4rem;
+    color: var(--dark-color);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 600;
+}
+
+.edit-btn, .add-btn {
+    background: var(--primary-color);
+    color: var(--primary-text-color);
+    border: none;
+    border-radius: 4px;
+    padding: 0.6rem 1.25rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+}
+
+.edit-btn:hover, .add-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+}
+
+.info-item {
+    background: var(--light-color);
+    padding: 1.25rem;
+    border-radius: var(--border-radius-sm);
+    border-left: 4px solid var(--secondary-color);
+    transition: var(--transition);
+}
+
+.info-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--gray-color);
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.value {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--dark-color);
+}
+
+/* Card Styles */
+.cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.25rem;
+    margin-top: 1.25rem;
+}
+
+.card {
+    background: var(--content-bg);
+    border-radius: var(--border-radius-sm);
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    transition: var(--transition);
+    border: 1px solid var(--light-gray);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    border-color: rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+    padding: 1rem 1.25rem;
+    background: var(--light-color);
+    border-bottom: 1px solid var(--light-gray);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-type, .card-brand {
+    font-weight: 600;
+    color: var(--primary-color);
+    font-size: 0.95rem;
+}
+
+.default-badge {
+    background: var(--success-color);
+    color: var(--primary-text-color);
+    padding: 0.25rem 0.75rem;
+    border-radius: 5px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.card-body {
+    padding: 1.25rem;
+}
+
+.card-nickname {
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--dark-color);
+    font-size: 1.1rem;
+}
+
+.card-number {
+    font-family: 'Courier New', monospace;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    margin-bottom: 1rem;
+    color: var(--dark-color);
+}
+
+.card-details {
+    display: flex;
+    justify-content: space-between;
+    color: var(--gray-color);
+    font-size: 0.9rem;
+}
+
+.card-footer {
+    display: flex;
+    border-top: 1px solid var(--light-gray);
+}
+
+.action-btn {
+    flex: 1;
+    padding: 0.75rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.action-btn.edit {
+    color: var(--primary-color);
+    border-right: 1px solid var(--light-gray);
+}
+
+.action-btn.delete {
+    color: var(--danger-color);
+}
+
+.action-btn:hover {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 2.5rem;
+    color: var(--gray-color);
+    background: var(--light-color);
+    border-radius: var(--border-radius-sm);
+    border: 1px dashed var(--light-gray);
+}
+
+.empty-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.empty-state p {
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+/* Modal Styles (Consolidated) */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1050;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    animation: fadeIn 0.3s;
+    overflow: hidden;
+    margin-top: 30px;
+}
+
+body.modal-open {
+    overflow: hidden;
+}
+
+.modal-content {
+    background-color: var(--content-bg);
+    margin: 3% auto;
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    position: relative;
+    animation: slideDown 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    padding: 0 0 1.5rem 0;
+    border-bottom: 1px solid var(--light-gray);
+    flex-shrink: 0;
+}
+
+.modal-body {
+    overflow-y: auto;
+    padding: 1rem 0;
+    margin-right: -0.5rem;
+    padding-right: 0.5rem;
+    flex-grow: 1;
+}
+
+.modal-footer {
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--light-gray);
+    margin-top: 1rem;
+    flex-shrink: 0;
+}
+
+.modal-content h2 {
+    margin-bottom: 0;
+    color: var(--dark-color);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 600;
+    font-size: 1.5rem;
+}
+
+.close {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.5rem;
+    font-size: 1.75rem;
+    font-weight: bold;
+    color: var(--gray-color);
+    cursor: pointer;
+    transition: var(--transition);
+    line-height: 1;
+}
+
+.close:hover {
+    color: var(--danger-color);
+    transform: rotate(90deg);
+}
+
+.submit-btn {
+    background: var(--primary-color);
+    color: var(--primary-text-color);
+    border: none;
+    border-radius: var(--border-radius-sm);
+    padding: 0.85rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    width: 100%;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.submit-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+}
+
+/* Form Styles */
+.modal-content form label {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-weight: 500;
+    color: var(--dark-color);
+    font-size: 0.95rem;
+}
+
+.modal-content form input[type="text"],
+.modal-content form input[type="email"],
+.modal-content form input[type="file"],
+.modal-content form select,
+.modal-content form input[type="password"],
+.modal-content form textarea {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--light-gray);
+    border-radius: var(--border-radius-sm);
+    font-size: 1rem;
+    transition: var(--transition);
+    margin-bottom: 1.25rem;
+    background: var(--light-color);
+}
+
+.modal-content form input:focus,
+.modal-content form select:focus,
+.modal-content form textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    outline: none;
+    background: var(--content-bg);
+}
+
+/* Scrollbar */
+.modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: var(--light-gray);
+    border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background: var(--gray-color);
+    border-radius: 4px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 2rem 1.5rem;
+    }
+    
+    .profile-picture-container {
+        margin-right: 0;
+        margin-bottom: 1.5rem;
+    }
+
+    .profile-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .info-grid, .cards-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal-content {
+        width: 95%;
+        padding: 1.5rem;
+    }
+    
+    #profile-name {
+        font-size: 1.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-content {
+        padding: 1.5rem;
+    }
+    
+    .profile-section {
+        padding: 1.25rem;
+    }
+    
+    .card-footer {
+        flex-direction: column;
+    }
+    
+    .action-btn {
+        padding: 0.75rem;
+    }
+    
+    .action-btn.edit {
+        border-right: none;
+        border-bottom: 1px solid var(--light-gray);
+    }
+    
+    .modal-content {
+        padding: 1.25rem;
+    }
+    
+    .modal-content h2 {
+        font-size: 1.3rem;
+    }
+}
+</style>
+
+<script>
+// Base URL for editing addresses
+const EDIT_ADDRESS_BASE_URL = "{% url 'edit_saved_address' 0 %}".slice(0, -1);
+// Base URL for editing cards
+const EDIT_CARD_BASE_URL = "{% url 'edit_saved_card' 0 %}".slice(0, -1);
+
+// Close alert messages
+document.querySelectorAll('.close-alert').forEach(button => {
+    button.addEventListener('click', (e) => {
+        e.target.closest('.alert').style.display = 'none';
+    });
+});
+
+// Auto-close messages after 5 seconds
+setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(alert => {
+        alert.style.display = 'none';
+    });
+}, 5000);
+
+// Enhanced Modal Functions with Centering
+function centerModal(modal) {
+    const content = modal.querySelector('.modal-content');
+    const windowHeight = window.innerHeight;
+    const contentHeight = content.offsetHeight;
+    
+    if (contentHeight < windowHeight * 0.9) {
+        content.style.margin = 'auto';
+        content.style.position = 'absolute';
+        content.style.top = '0';
+        content.style.bottom = '0';
+        content.style.left = '0';
+        content.style.right = '0';
+    } else {
+        content.style.margin = '20px auto';
+        content.style.position = 'relative';
+    }
+}
+
+// Modal open/close functions
+function openProfileModal() {
+    const modal = document.getElementById("editProfileModal");
+    modal.style.display = "block";
+    document.body.classList.add('modal-open');
+    centerModal(modal);
+}
+
+function closeProfileModal() {
+    document.getElementById("editProfileModal").style.display = "none";
+    document.body.classList.remove('modal-open');
+}
+
+function openPicModal() {
+    const modal = document.getElementById("editPicModal");
+    modal.style.display = "block";
+    document.body.classList.add('modal-open');
+    centerModal(modal);
+}
+
+function closePicModal() {
+    document.getElementById("editPicModal").style.display = "none";
+    document.body.classList.remove('modal-open');
+}
+
+function openContactInfoModal() {
+    const modal = document.getElementById("editContactInfoModal");
+    modal.style.display = "block";
+    document.body.classList.add('modal-open');
+    centerModal(modal);
+}
+
+function closeContactInfoModal() {
+    document.getElementById("editContactInfoModal").style.display = "none";
+    document.body.classList.remove('modal-open');
+}
+
+function openAddAddressModal() {
+    const modal = document.getElementById("addAddressModal");
+    modal.style.display = "block";
+    document.body.classList.add('modal-open');
+    centerModal(modal);
+}
+
+function closeAddAddressModal() {
+    document.getElementById("addAddressModal").style.display = "none";
+    document.body.classList.remove('modal-open');
+}
+
+function openEditAddressModal(address_id, address_type, street_address, city, state, zip_code, country, phone_number) { // <-- ADDED 'phone_number' here
+    const modal = document.getElementById("editAddressModal");
+    const form = document.getElementById("editAddressForm");
+
+    form.action = EDIT_ADDRESS_BASE_URL + address_id + '/';
+
+    form.querySelector('#id_address_type').value = address_type;
+    form.querySelector('#id_street_address').value = street_address;
+    form.querySelector('#id_city').value = city;
+    form.querySelector('#id_state').value = state;
+    form.querySelector('#id_zip_code').value = zip_code;
+    form.querySelector('#id_country').value = country;
+    form.querySelector('#id_phone_number').value = phone_number; // This will now correctly use the passed argument
+
+
+    modal.style.display = "block";
+    document.body.classList.add('modal-open');
+    centerModal(modal);
+}
+
+function closeEditAddressModal() {
+    document.getElementById("editAddressModal").style.display = "none";
+    document.body.classList.remove('modal-open');
+}
+
+function openAddCardModal() {
+    const modal = document.getElementById("addCardModal");
+    modal.style.display = "block";
+    document.body.classList.add('modal-open');
+    centerModal(modal);
+}
+
+function closeAddCardModal() {
+    document.getElementById("addCardModal").style.display = "none";
+    document.body.classList.remove('modal-open');
+}
+
+function openEditCardModal(card_id, card_nickname, last_four_digits, expiration_month, expiration_year, card_brand, is_default) {
+    const modal = document.getElementById("editCardModal");
+    const form = document.getElementById("editCardForm");
+
+    form.action = EDIT_CARD_BASE_URL + card_id + '/';
+
+    form.querySelector('#id_card_nickname').value = card_nickname;
+    form.querySelector('#id_last_four_digits').value = last_four_digits;
+    form.querySelector('#id_expiration_month').value = expiration_month;
+    form.querySelector('#id_expiration_year').value = expiration_year;
+    form.querySelector('#id_card_brand').value = card_brand;
+    form.querySelector('#id_is_default').checked = (is_default === 'true');
+
+    modal.style.display = "block";
+    document.body.classList.add('modal-open');
+    centerModal(modal);
+}
+
+function closeEditCardModal() {
+    document.getElementById("editCardModal").style.display = "none";
+    document.body.classList.remove('modal-open');
+}
+
+// Close modals when clicking outside
+window.onclick = function(event) {
+    const modals = [
+        'editProfileModal', 'editPicModal', 'editContactInfoModal',
+        'addAddressModal', 'editAddressModal', 'addCardModal', 'editCardModal'
+    ];
+    
+    modals.forEach(modalId => {
+        const modal = document.getElementById(modalId);
+        if (event.target == modal) {
+            modal.style.display = "none";
+            document.body.classList.remove('modal-open');
+        }
+    });
+}
+
+// Re-center modals on window resize
+window.addEventListener('resize', function() {
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        if (modal.style.display === 'block') {
+            centerModal(modal);
+        }
+    });
+});
+
+// Image preview for profile picture modal
+document.getElementById('id_image').addEventListener('change', function (event) {
+    const file = event.target.files[0];
+    const previewContainer = document.getElementById('preview-container');
+    const previewImage = document.getElementById('preview-image');
+
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            previewImage.src = e.target.result;
+            previewContainer.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    } else {
+        previewContainer.classList.add('hidden');
+        previewImage.src = '';
+    }
+});
+</script>
+{% endblock %}

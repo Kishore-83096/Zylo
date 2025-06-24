@@ -1,0 +1,307 @@
+{% extends 'base/baseseller.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Root CSS Variables */
+    :root {
+        --primary-brand-dark: #2c3e50; /* Deep Slate Blue */
+        --primary-brand-light: #34495e; /* Slightly lighter Slate Blue */
+        --accent-gold: #f39c12; /* Goldenrod */
+        --accent-emerald: #27ae60; /* Emerald Green for success/highlights */
+        --text-dark: #2c3e50; /* Dark text for content */
+        --text-medium: #7f8c8d; /* Medium gray for secondary text */
+        --text-light: #ecf0f1; /* Light gray for primary brand areas */
+        --background-light: #f4f6f9; /* Light background for content areas */
+        --border-light: #dde2e6; /* Light border color */
+        --shadow-subtle: rgba(0, 0, 0, 0.08);
+        --shadow-moderate: rgba(0, 0, 0, 0.15);
+    }
+
+    /* Tailwind-like classes using CSS variables */
+    .bg-background-light { background-color: var(--background-light); }
+    .text-primary-brand-dark { color: var(--primary-brand-dark); }
+    .text-text-dark { color: var(--text-dark); }
+    .text-text-medium { color: var(--text-medium); }
+    .border-border-light { border-color: var(--border-light); }
+    .bg-accent-emerald { background-color: var(--accent-emerald); }
+    .bg-primary-brand-light { background-color: var(--primary-brand-light); }
+    .bg-accent-gold { background-color: var(--accent-gold); }
+    .hover\:bg-opacity-90:hover { background-color: rgba(243, 156, 18, 0.9); }
+    .focus\:ring-primary-brand-light:focus { --tw-ring-color: var(--primary-brand-light); }
+    .focus\:border-primary-brand-light:focus { border-color: var(--primary-brand-light); }
+    .focus\:ring-accent-gold:focus { --tw-ring-color: var(--accent-gold); }
+    .hover\:bg-gray-200:hover { background-color: #e2e8f0; }
+
+    /* Basic Tailwind utility classes */
+    .min-h-screen { min-height: 100vh; }
+    .py-10 { padding-top: 2.5rem; padding-bottom: 2.5rem; }
+    .px-4 { padding-left: 1rem; padding-right: 1rem; }
+    .sm\:px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+    .lg\:px-8 { padding-left: 2rem; padding-right: 2rem; }
+    .max-w-3xl { max-width: 48rem; }
+    .mx-auto { margin-left: auto; margin-right: auto; }
+    .bg-white { background-color: #fff; }
+    .p-8 { padding: 2rem; }
+    .rounded-lg { border-radius: 0.5rem; }
+    .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+    .border { border-width: 1px; }
+    .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+    .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+    .font-bold { font-weight: 700; }
+    .mb-4 { margin-bottom: 1rem; }
+    .mb-6 { margin-bottom: 1.5rem; }
+    .mb-8 { margin-bottom: 2rem; }
+    .text-center { text-align: center; }
+    .space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.75rem; }
+    .p-3 { padding: 0.75rem; }
+    .p-4 { padding: 1rem; }
+    .mb-2 { margin-bottom: 0.5rem; }
+    .rounded-md { border-radius: 0.375rem; }
+    .text-white { color: #fff; }
+    .bg-red-600 { background-color: #dc2626; }
+    .shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+    .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.5rem; }
+    .form-group { }
+    .block { display: block; }
+    .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+    .font-semibold { font-weight: 600; }
+    .text-red-500 { color: #ef4444; }
+    .mt-1 { margin-top: 0.25rem; }
+    .w-full { width: 100%; }
+    .transition { transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+    .duration-300 { transition-duration: 300ms; }
+    .ease-in-out { transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+    .hover\:shadow-lg:hover { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+    .focus\:outline-none:focus { outline: 2px solid transparent; outline-offset: 2px; }
+    .focus\:ring-2:focus { --tw-ring-offset-width: 0px; --tw-ring-offset-color: #fff; --tw-ring-color: rgba(59, 130, 246, 0.5); --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color); --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color); box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000); }
+    .focus\:ring-opacity-75:focus { --tw-ring-opacity: 0.75; }
+    .sm\:text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+    .inline-flex { display: inline-flex; }
+    .items-center { align-items: center; }
+    .justify-center { justify-content: center; }
+    .px-5 { padding-left: 1.25rem; padding-right: 1.25rem; }
+    .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+    .text-base { font-size: 1rem; line-height: 1.5rem; }
+    .ml-4 { margin-left: 1rem; }
+    .text-gray-700 { color: #4a5568; }
+    .max-h-48 { max-height: 12rem; }
+    .object-contain { object-fit: contain; }
+    .image-preview {
+        max-height: 12rem;
+        object-fit: contain;
+        margin-top: 0.5rem;
+        border-radius: 0.375rem;
+        border: 1px solid var(--border-light);
+        box-shadow: 0 1px 3px var(--shadow-subtle);
+        display: none;
+    }
+
+    /* Improved file input styling for better visibility */
+    input[type="file"] {
+    /* Remove default browser styling */
+    all: unset;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border: 1.5px solid var(--border-light);
+    border-radius: 0.5rem; /* Increased for a softer look */
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-family: inherit;
+    color: #374151; /* Dark gray text */
+    background-color: #ffffff; /* White background for better contrast */
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    display: inline-block;
+    height: 2.75rem; /* roughly align with other inputs */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+input[type="file"]:hover {
+    background-color: #f3f4f6; /* Slightly darker on hover */
+    border-color: #d1d5db; /* Keep border color consistent */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* More pronounced shadow on hover */
+}
+input[type="file"]:focus-visible {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--primary-brand-light); /* Highlight on focus */
+}
+/* Optional: Add a pseudo-element for an icon */
+input[type="file"]::before {
+    content: '📎'; /* Example icon, can be replaced with an actual image */
+    margin-right: 0.5rem; /* Space between icon and text */
+    font-size: 1.2rem; /* Adjust icon size */
+    vertical-align: middle; /* Align icon with text */
+    display: inline-block; /* Ensure it behaves like an inline element */
+}
+    /* Optional: Add a subtle label styling for the file input label if needed */
+</style>
+
+<div class="min-h-screen bg-background-light py-10 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-lg border border-border-light">
+        <h1 class="text-3xl font-bold text-primary-brand-dark mb-4 text-center">Update Product</h1>
+        <p class="text-text-medium text-center mb-8">Use the form below to update the details of your product: <strong class="text-primary-brand-dark">{{ product.name }}</strong></p>
+
+        {% if messages %}
+            <ul class="mb-6 space-y-3" role="alert">
+                {% for message in messages %}
+                    <li class="p-4 rounded-md {% if message.tags == 'success' %}bg-accent-emerald text-white{% elif message.tags == 'error' %}bg-red-600 text-white{% else %}bg-primary-brand-light text-white{% endif %} shadow-md">
+                        {{ message }}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" class="space-y-6" novalidate>
+            {% csrf_token %}
+
+            {# Display current image if exists #}
+            {% if product.image %}
+            <div class="form-group mb-6">
+                <label class="block text-text-dark text-sm font-semibold mb-2" for="current-image">Current Product Image:</label>
+                <div id="current-image" class="flex items-center justify-center border border-border-light rounded-md p-4 bg-gray-50">
+                    <img src="{{ product.image.url }}" alt="{{ product.name }} - Current Image" class="max-h-48 object-contain rounded-md">
+                </div>
+                <p class="text-text-medium text-xs mt-2 text-center">Leave the 'Image' field below empty to keep this image.</p>
+            </div>
+            {% endif %}
+
+            {# Iterate through form fields, render image field with preview #}
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}" class="block text-text-dark text-sm font-semibold mb-2">
+                        {{ field.label }}
+                        {% if field.field.required and field.name != 'image' %}
+                            <span class="text-red-500">*</span>
+                        {% endif %}
+                    </label>
+
+                    {% if field.name == 'image' %}
+                        {{ field }}
+                        <img id="image-preview" class="image-preview" alt="Selected image preview">
+                        {% if field.help_text %}
+                            <p class="text-text-medium text-xs mt-1">{{ field.help_text }}</p>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+                        {% endfor %}
+                    {% else %}
+                        {{ field }}
+                        {% if field.help_text %}
+                            <p class="text-text-medium text-xs mt-1">{{ field.help_text }}</p>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <div class="flex justify-end pt-4">
+                <a href="{% url 'product_management' %}" class="inline-flex items-center px-5 py-2 border border-border-light rounded-md font-semibold text-text-dark bg-white hover:bg-gray-200 transition duration-300 ease-in-out shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-brand-light focus:ring-opacity-75">
+                    Cancel
+                </a>
+                <button type="submit" class="ml-4 inline-flex items-center px-5 py-2 border border-transparent rounded-md shadow-sm font-semibold text-white bg-accent-gold hover:bg-opacity-90 transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-accent-gold focus:ring-opacity-75">
+                    Update Product
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const categoryField = document.getElementById('id_category');
+        const subcategoryField = document.getElementById('id_subcategory');
+
+        // Add styling classes to Django-rendered form inputs
+        const formFields = document.querySelectorAll('.form-group input, .form-group select, .form-group textarea');
+        formFields.forEach(field => {
+            if (field.type === 'file') {
+                /* Remove classes that interfere, apply native improved styling */
+                field.className = ''; // Reset classes
+                field.classList.add('mt-1', 'block', 'w-full'); // minimal classes, custom styling handles rest
+            } else {
+                field.classList.add('mt-1', 'block', 'w-full', 'p-3', 'border', 'border-border-light', 'rounded-md', 'shadow-sm', 'sm:text-sm', 'text-text-dark', 'bg-white');
+                field.classList.add('focus:ring-primary-brand-light', 'focus:border-primary-brand-light');
+            }
+        });
+
+        // Image preview for uploaded file
+        const imageInput = document.getElementById('id_image');
+        const imagePreview = document.getElementById('image-preview');
+
+        if (imageInput && imagePreview) {
+            imageInput.addEventListener('change', function () {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+
+                    reader.onload = function (e) {
+                        imagePreview.src = e.target.result;
+                        imagePreview.style.display = 'block';
+                    };
+
+                    reader.readAsDataURL(file);
+                } else {
+                    imagePreview.src = '';
+                    imagePreview.style.display = 'none';
+                }
+            });
+        }
+
+        // Function to load subcategories dynamically
+        function loadSubcategories(categoryId, selectedSubcategoryId = null) {
+            if (subcategoryField) {
+                subcategoryField.innerHTML = '<option value="">Loading...</option>';
+
+                if (categoryId) {
+                    fetch(`/sell_zylo/load-subcategories/?category_id=${categoryId}`)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            subcategoryField.innerHTML = '<option value="">Select a subcategory</option>';
+                            data.forEach(subcategory => {
+                                const option = document.createElement('option');
+                                option.value = subcategory.id;
+                                option.textContent = subcategory.name;
+                                if (selectedSubcategoryId && subcategory.id == selectedSubcategoryId) {
+                                    option.selected = true; // Pre-select if it matches
+                                }
+                                subcategoryField.appendChild(option);
+                            });
+                        })
+                        .catch(error => {
+                            console.error('Error loading subcategories:', error);
+                            subcategoryField.innerHTML = '<option value="">Error loading subcategories</option>';
+                        });
+                } else {
+                    subcategoryField.innerHTML = '<option value="">Select a category first</option>';
+                }
+            }
+        }
+
+        // Handle category change event
+        if (categoryField) {
+            categoryField.addEventListener('change', function () {
+                loadSubcategories(this.value);
+            });
+
+            // Initial load for subcategories on page load
+            const initialCategoryId = categoryField.value;
+            const initialSubcategoryId = subcategoryField ? subcategoryField.value : null;
+            if (initialCategoryId) {
+                loadSubcategories(initialCategoryId, initialSubcategoryId);
+            } else if (subcategoryField) {
+                subcategoryField.innerHTML = '<option value="">Select a category first</option>';
+            }
+        }
+    });
+</script>
+{% endblock %}
+

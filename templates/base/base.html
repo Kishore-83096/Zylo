@@ -1,0 +1,808 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+    <title>ZYLO Dashboard</title>
+</head>
+<style>
+    /* ZYLO Theme Variables - Updated to match e-commerce color scheme */
+    :root {
+        --primary-dark-bg: #2a2e35; /* Dark slate */
+        --primary-text-color: #ffffff;
+        --accent-teal: #2dd4bf; /* Teal */
+        --accent-blue: #3b82f6; /* Blue */
+        --accent-coral: #ff6b6b; /* Coral from e-commerce */
+        --gradient-start: #2dd4bf; /* Teal */
+        --gradient-end: #3b82f6; /* Blue */
+        --content-bg: #ffffff;
+        --content-bg-opacity: rgba(255, 255, 255, 0.95);
+        --text-color-dark: #333333;
+        --text-color-medium: #6b7280;
+        --border-color-light: #e9ecef;
+        --shadow-color: rgba(0, 0, 0, 0.1);
+        --shadow-xl: rgba(0, 0, 0, 0.25);
+        /* Sidebar specific variables */
+        --sidebar-bg: var(--primary-dark-bg);
+        --sidebar-item-color: var(--primary-text-color);
+        --sidebar-hover-bg: rgba(255, 255, 255, 0.1);
+        --sidebar-active-color: var(--accent-coral); /* Changed to coral */
+        --logout-btn-bg: #ef4444;
+        --logout-btn-hover-bg: #dc2626;
+        /* Layout Dimensions */
+        --header-height: 60px;
+        --footer-padding: 15px;
+        --footer-font-size: 0.85rem;
+        --footer-visual-height: calc(2 * var(--footer-padding) + var(--footer-font-size) * 1.5);
+        --sidebar-mini-width: 80px;
+        --sidebar-expanded-width: 220px;
+        --content-area-margin: 20px;
+        --content-area-padding: 20px;
+        --content-area-mobile-padding: 15px;
+        --border-radius: 3px; /* Consistent 5px border radius */
+    }
+
+    /* Reset & base */
+    * {
+        box-sizing: border-box;
+    }
+
+    html, body {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+        color: var(--text-color-dark);
+    }
+
+    /* Apply theme variables to body */
+    body {
+        background-color: var(--content-bg);
+        color: var(--text-color-dark);
+    }
+
+    /* Scrollbar Styles */
+    body::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    body::-webkit-scrollbar-track {
+        background: var(--content-bg);
+        border-radius: var(--border-radius);
+    }
+
+    body::-webkit-scrollbar-thumb {
+        background-color: var(--accent-coral);
+        border-radius: var(--border-radius);
+        border: 2px solid var(--content-bg);
+    }
+
+    body::-webkit-scrollbar-thumb:hover {
+        background-color: var(--accent-blue);
+    }
+
+    .sidebar::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .sidebar::-webkit-scrollbar-track {
+        background: var(--sidebar-bg);
+        border-radius: var(--border-radius);
+    }
+
+    .sidebar::-webkit-scrollbar-thumb {
+        background-color: var(--accent-coral);
+        border-radius: var(--border-radius);
+        border: 2px solid var(--sidebar-bg);
+    }
+
+    .sidebar::-webkit-scrollbar-thumb:hover {
+        background-color: var(--accent-blue);
+    }
+
+    /* --- Header Styles --- */
+    .header-main {
+        position: sticky;
+        top: 0;
+        width: 100%;
+        height: var(--header-height);
+        background-color: var(--primary-dark-bg);
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+        color: var(--primary-text-color);
+        z-index: 10000;
+        box-shadow: 0 2px 8px var(--shadow-color);
+        justify-content: space-between;
+    }
+
+    .logo-main {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        font-weight: 700;
+        font-size: 1.8rem;
+        text-align: center;
+    }
+
+    .header-right {
+        display: flex;
+        align-items: center;
+        gap: 30px;
+        margin-left: auto;
+    }
+
+    /* Menu toggle */
+    .menu-toggle {
+        font-size: 1.5rem;
+        position: absolute;
+        left: 30px;
+        transition: color 0.3s ease, transform 0.2s ease;
+    }
+
+    .menu-toggle:hover {
+        color: var(--accent-coral);
+        cursor: pointer;
+        transform: scale(1.1);
+    }
+
+    /* Search bar */
+    .search-bar {
+        position: relative;
+        display: flex;
+        align-items: center;
+        border-radius: var(--border-radius);
+        background: var(--content-bg);
+        padding: 5px 10px;
+        box-shadow: 0 0 5px var(--shadow-color);
+        width: 160px;
+        transition: width 0.4s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+        overflow: hidden;
+        cursor: text;
+        flex-shrink: 0;
+    }
+
+    .search-bar:hover,
+    .search-bar:focus-within {
+        width: 240px;
+        background-color: var(--content-bg-opacity);
+        box-shadow: 0 0 8px var(--accent-coral);
+    }
+
+    .search-bar input {
+        flex: 1;
+        border: none;
+        outline: none;
+        font-size: 0.9rem;
+        padding: 5px;
+        background: transparent;
+        color: var(--text-color-dark);
+    }
+
+    .search-bar input:focus {
+        outline: none;
+        border: none;
+        box-shadow: none;
+    }
+
+    .search-bar button {
+        background: none;
+        border: none;
+        color: var(--accent-coral);
+        cursor: pointer;
+        font-size: 1rem;
+        padding: 0 5px;
+        flex-shrink: 0;
+    }
+
+    .search-bar button:hover {
+        color: var(--accent-blue);
+    }
+
+    /* Icon buttons */
+    .icon-btn {
+        background: none;
+        border: none;
+        color: var(--primary-text-color);
+        cursor: pointer;
+        font-size: 1.4rem;
+        position: relative;
+        transition: color 0.3s ease, transform 0.2s ease;
+        outline: none;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+    }
+
+    .icon-btn:hover,
+    .icon-btn:focus {
+        color: var(--accent-coral);
+        transform: scale(1.1);
+        text-decoration: none;
+    }
+
+    .store-nav-img {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--border-radius);
+        object-fit: cover;
+        margin-right: 8px;
+    }
+
+    .profile-btn {
+        font-size: 1.6rem;
+    }
+
+    .profile-img {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+        display: block;
+        border: 2px solid var(--primary-text-color);
+    }
+    
+    .profile-nav-img {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        transition: transform 0.2s ease-in-out;
+    }
+
+    .profile-nav-img:hover {
+        transform: scale(1.1);
+    }
+
+    /* Sidebar styling */
+    .sidebar {
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        bottom: 0;
+        width: var(--sidebar-mini-width);
+        background: var(--sidebar-bg);
+        padding: 20px 0;
+        padding-bottom: 70px;
+        transition: width 0.3s ease, transform 0.3s ease;
+        z-index: 9999;
+        overflow-y: auto;
+        overflow-x: hidden;
+        box-shadow: 2px 0 5px var(--shadow-color);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+
+    .sidebar.expanded {
+        width: var(--sidebar-expanded-width);
+        box-shadow: 4px 0 10px var(--shadow-xl);
+    }
+
+    /* Sidebar navigation links */
+    .sidebar nav a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 12px 15px;
+        color: var(--sidebar-item-color);
+        text-decoration: none;
+        font-weight: 600;
+        border-radius: var(--border-radius);
+        margin-bottom: 8px;
+        transition: background-color 0.3s ease, color 0.3s ease;
+        font-family: "Inter", sans-serif;
+        font-size: 1rem;
+        white-space: nowrap;
+    }
+
+    .sidebar nav a i {
+        margin-right: 0;
+        font-size: 1.25rem;
+        min-width: 20px;
+        text-align: center;
+    }
+
+    .sidebar nav a span {
+        display: none;
+        opacity: 0;
+        transition: opacity 0.1s ease;
+    }
+
+    .sidebar.expanded nav a {
+        justify-content: flex-start;
+    }
+
+    .sidebar.expanded nav a i {
+        margin-right: 12px;
+    }
+
+    .sidebar.expanded nav a span {
+        display: inline-block;
+        opacity: 1;
+    }
+
+    .sidebar nav a:hover {
+        background-color: var(--sidebar-hover-bg);
+        color: var(--accent-coral);
+    }
+
+    .sidebar nav a.active {
+        background: linear-gradient(to right, var(--accent-coral), var(--accent-blue));
+        color: var(--primary-text-color);
+        font-weight: 700;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .sidebar nav a.active::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateX(-100%);
+        transition: transform 0.5s ease-out;
+    }
+
+    .sidebar nav a.active:hover::before {
+        transform: translateX(0);
+    }
+
+    .sidebar nav {
+        flex-grow: 1;
+    }
+
+    /* Logout button */
+    .logout-btn {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(100% - 40px);
+        background-color: var(--logout-btn-bg);
+        color: var(--primary-text-color);
+        border: none;
+        padding: 12px 0;
+        font-weight: bold;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: background-color 0.3s ease, width 0.3s ease, left 0.3s ease, transform 0.3s ease, padding 0.3s ease;
+        box-shadow: 0 2px 5px var(--shadow-color);
+    }
+
+    .logout-btn span {
+        display: none;
+        opacity: 0;
+        transition: opacity 0.1s ease;
+    }
+
+    .sidebar.expanded .logout-btn {
+        left: 20px;
+        transform: translateX(0);
+        justify-content: flex-start;
+        padding: 12px 20px;
+    }
+
+    .sidebar.expanded .logout-btn span {
+        display: inline-block;
+        opacity: 1;
+    }
+
+    .logout-btn:hover {
+        background-color: var(--logout-btn-hover-bg);
+    }
+
+    /* Login button */
+    .login-btn {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(100% - 40px);
+        background-color: var(--accent-coral);
+        color: var(--primary-text-color);
+        border: none;
+        padding: 12px 0;
+        font-weight: bold;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: background-color 0.3s ease, width 0.3s ease, left 0.3s ease, transform 0.3s ease, padding 0.3s ease;
+        box-shadow: 0 2px 5px var(--shadow-color);
+    }
+
+    .login-btn span {
+        display: none;
+        opacity: 0;
+        transition: opacity 0.1s ease;
+    }
+
+    .sidebar.expanded .login-btn {
+        left: 20px;
+        transform: translateX(0);
+        justify-content: flex-start;
+        padding: 12px 20px;
+    }
+
+    .sidebar.expanded .login-btn span {
+        display: inline-block;
+        opacity: 1;
+    }
+
+    .login-btn:hover {
+        background-color: var(--accent-blue);
+    }
+
+    /* Content area */
+    .content {
+        padding: var(--content-area-padding);
+        min-height: calc(100vh - var(--header-height) - var(--footer-visual-height));
+        position: relative;
+        z-index: 1;
+        background-color: var(--content-bg);
+        box-shadow: 0 0 10px var(--shadow-color);
+        border-radius: var(--border-radius);
+        margin-top: var(--content-area-margin);
+        margin-bottom: var(--content-area-margin);
+        background-clip: padding-box;
+        border: 1px solid var(--border-color-light);
+        box-sizing: border-box;
+        width: calc(100% - var(--sidebar-mini-width) - (2 * var(--content-area-margin)));
+        margin-left: calc(var(--sidebar-mini-width) + var(--content-area-margin));
+        margin-right: var(--content-area-margin);
+        transition: width 0.3s ease, margin-left 0.3s ease;
+    }
+
+    body.sidebar-expanded .content {
+        width: calc(100% - var(--sidebar-expanded-width) - (2 * var(--content-area-margin)));
+        margin-left: calc(var(--sidebar-expanded-width) + var(--content-area-margin));
+    }
+
+    /* Footer */
+    footer {
+        height: var(--footer-visual-height);
+        line-height: var(--footer-visual-height);
+        background: var(--primary-dark-bg);
+        color: var(--primary-text-color);
+        text-align: center;
+        font-size: var(--footer-font-size);
+        position: relative;
+        bottom: 0;
+        width: 100%;
+        user-select: none;
+    }
+
+    /* --- Media Queries for Responsiveness --- */
+    @media (max-width: 768px) {
+        .sidebar {
+            width: var(--sidebar-expanded-width);
+            transform: translateX(-100%);
+            padding: 20px;
+        }
+        .sidebar.expanded {
+            transform: translateX(0);
+        }
+
+        .content {
+            width: calc(100% - (2 * var(--content-area-mobile-padding)));
+            margin-left: var(--content-area-mobile-padding);
+            margin-right: var(--content-area-mobile-padding);
+            margin-top: var(--content-area-mobile-padding);
+            padding: var(--content-area-mobile-padding);
+            max-width: unset;
+        }
+
+        body.sidebar-expanded .content {
+            margin-left: var(--content-area-mobile-padding);
+            width: calc(100% - (2 * var(--content-area-mobile-padding)));
+            max-width: unset;
+        }
+
+        .sidebar nav a {
+            justify-content: flex-start;
+            padding: 12px 15px;
+        }
+
+        .sidebar nav a i {
+            margin-right: 12px;
+        }
+
+        .sidebar nav a span {
+            display: inline-block;
+            opacity: 1;
+        }
+
+        .logout-btn,
+        .login-btn {
+            left: 20px;
+            transform: translateX(0);
+            justify-content: flex-start;
+            padding: 12px 20px;
+        }
+
+        .logout-btn span,
+        .login-btn span {
+            display: inline-block;
+            opacity: 1;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+        }
+
+        .header-right {
+            gap: 10px;
+        }
+
+        .search-bar {
+            width: 100px;
+            margin-right: 10px;
+        }
+
+        .search-bar:hover,
+        .search-bar:focus-within {
+            width: 150px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .header {
+            padding: 0 10px;
+        }
+
+        .menu-toggle {
+            margin-right: 10px;
+        }
+
+        .header-right {
+            gap: 5px;
+        }
+
+        .search-bar {
+            display: none;
+        }
+
+        .logo {
+            font-size: 1.4rem;
+        }
+
+        .icon-btn {
+            font-size: 1.2rem;
+        }
+
+        .profile-btn {
+            font-size: 1.4rem;
+        }
+
+        .logout-btn,
+        .login-btn {
+            font-size: 0.9rem;
+            padding: 10px 0;
+        }
+    }
+</style>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<body>
+    <header class="header-main">
+        <div class="menu-toggle" id="menu-toggle" aria-label="Toggle sidebar">
+            <i class="fas fa-bars"></i>
+        </div>
+        <div class="logo-main">
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-500">
+                ZYLO
+            </h1>
+        </div>
+        <div class="header-right">
+            <div class="search-bar" role="search">
+                <input type="text" placeholder="Search products..." aria-label="Search products" />
+                <button aria-label="Search">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+            {% if is_superuser %}
+                <button type="button" class="icon-btn superuser-btn" aria-label="Superuser Dashboard" onclick="location.href='{% url 'admin:index' %}'">
+                    <i class="fas fa-user-shield"></i>
+                </button>
+            {% endif %}
+            {% if is_store_approved %}
+                <button type="button" class="icon-btn superuser-btn" aria-label="Store Dashboard" onclick="location.href='{% url 'store' %}'">
+                    {% if logo %}
+                        <img src="{{ logo.image.url }}" alt="Store Logo" class="store-nav-img">
+                    {% else %}
+                        <i class="fas fa-store"></i>
+                    {% endif %}
+                </button>
+            {% endif %}
+            <button type="button" class="icon-btn" aria-label="Shopping Cart" onclick="location.href='{% url 'cart' %}'">
+                <i class="fas fa-shopping-cart"></i>
+            </button>
+            <button type="button" class="icon-btn profile-btn" aria-label="User Profile" onclick="location.href='{% url 'profile' %}'">
+                {% if profile_picture.image %}
+                    <img src="{{ profile_picture.image.url }}" alt="{{ user_name }} Profile" class="profile-nav-img">
+                {% else %}
+                    <i class="fas fa-user-circle profile-nav-icon"></i>
+                {% endif %}
+            </button>
+        </div>
+    </header>
+
+    <aside class="sidebar" id="sidebar" aria-label="Sidebar navigation">
+        <nav>
+            <a href="{% url 'home' %}"><i class="fas fa-home"></i> <span>Home</span></a>
+            <a href="orders-page.html"><i class="fas fa-box"></i> <span>Orders</span></a>
+            <a href="wishlist-page.html"><i class="fas fa-heart"></i> <span>Wishlist</span></a>
+            <a href="settings-page.html"><i class="fas fa-user-cog"></i> <span>Settings</span></a>
+            <a href="customer-care-page.html"><i class="fas fa-question-circle"></i> <span>Customer Care</span></a>
+            <a href="about-page.html"><i class="fas fa-info-circle"></i> <span>About</span></a>
+        </nav>
+
+        {% if user.is_authenticated %}
+            <button class="logout-btn" onclick="window.location.href='{% url 'account_logout' %}'" aria-label="Logout">
+                <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+            </button>
+        {% else %}
+            <button class="login-btn" onclick="window.location.href='{% url 'account_login' %}'" aria-label="Login">
+                <i class="fas fa-sign-in-alt"></i> <span>Login</span>
+            </button>
+        {% endif %}
+    </aside>
+
+    <main class="content" id="content">
+        {% block content %}
+            <h2 class="text-2xl font-bold mb-4">Welcome to ZYLO!</h2>
+            <p class="text-gray-700">This is the main content area of your user page. You can customize this section with dashboards, product listings, etc.</p>
+            <div class="mt-8 p-6 bg-gray-100 rounded-lg shadow-md">
+                <h3 class="text-xl font-semibold mb-2">Hover over elements to see changes:</h3>
+                <ul class="list-disc list-inside space-y-2">
+                    <li>Try hovering over the <strong>hamburger menu</strong> (top left).</li>
+                    <li>Hover over the search bar.</li>
+                    <li>Hover over the search button.</li>
+                    <li>Hover over the shopping cart and user profile icons in the header.</li>
+                    <li>Open and close the sidebar, then hover over the sidebar navigation links.</li>
+                    <li>Hover over the logout button in the sidebar.</li>
+                </ul>
+            </div>
+        {% endblock %}
+    </main>
+
+    <footer>&copy; 2025 Shopnetic. All rights reserved.</footer>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const menuToggle = document.getElementById("menu-toggle");
+            const sidebar = document.getElementById("sidebar");
+            const body = document.body;
+            const sidebarLinks = document.querySelectorAll("#sidebar nav a");
+
+            // Function to set sidebar state (mini/expanded)
+            function setSidebarState(isExpanded) {
+                if (isExpanded) {
+                    sidebar.classList.add("expanded");
+                    body.classList.add("sidebar-expanded");
+                    localStorage.setItem('sidebarState', 'expanded');
+                } else {
+                    sidebar.classList.remove("expanded");
+                    body.classList.remove("sidebar-expanded");
+                    localStorage.setItem('sidebarState', 'mini');
+                }
+            }
+
+            // Function to highlight the active link in the sidebar
+            function highlightActiveLink() {
+                const currentPath = window.location.pathname;
+                sidebarLinks.forEach(link => {
+                    link.classList.remove("active");
+                    
+                    let linkHref = link.getAttribute('href');
+                    
+                    let normalizedLinkHref = linkHref.replace(/^\/|\/$/g, '');
+                    let normalizedCurrentPath = currentPath.replace(/^\/|\/$/g, '');
+
+                    const linkSegments = normalizedLinkHref.split('/');
+                    const linkIdentifier = linkSegments[linkSegments.length - 1] || 'home';
+
+                    const currentPathSegments = normalizedCurrentPath.split('/');
+                    const currentIdentifier = currentPathSegments[currentPathSegments.length - 1] || 'home';
+
+                    if (linkIdentifier === 'home' && (currentPath === '/' || currentPath.slice(-6) === '/home/' || currentPath.slice(-6) === '/zylo/')) {
+                         link.classList.add("active");
+                    }
+                    else if (currentIdentifier === linkIdentifier && linkIdentifier !== '') {
+                        link.classList.add("active");
+                    }
+                    else if (link.getAttribute('href').includes('/admin/') && currentPath.includes('/admin/')) {
+                        link.classList.add('active');
+                    }
+                    else if (link.getAttribute('href').includes('/store/') && currentPath.includes('/store/')) {
+                        link.classList.add('active');
+                    }
+                     else if (link.getAttribute('href').includes('/profile/') && currentPath.includes('/profile/')) {
+                        link.classList.add('active');
+                    }
+                    else if (link.getAttribute('href').includes('orders-page.html') && currentPath.includes('orders-page.html')) {
+                        link.classList.add('active');
+                    }
+                    else if (link.getAttribute('href').includes('wishlist-page.html') && currentPath.includes('wishlist-page.html')) {
+                        link.classList.add('active');
+                    }
+                    else if (link.getAttribute('href').includes('settings-page.html') && currentPath.includes('settings-page.html')) {
+                        link.classList.add('active');
+                    }
+                    else if (link.getAttribute('href').includes('customer-care-page.html') && currentPath.includes('customer-care-page.html')) {
+                        link.classList.add('active');
+                    }
+                     else if (link.getAttribute('href').includes('about-page.html') && currentPath.includes('about-page.html')) {
+                        link.classList.add('active');
+                    }
+
+                    if (link.getAttribute('href').includes('account_logout') || link.getAttribute('href').includes('account_login')) {
+                         link.classList.remove("active");
+                    }
+                });
+            }
+
+            // Initial state setup for sidebar based on screen size and saved preference
+            if (window.innerWidth > 768) {
+                const savedSidebarState = localStorage.getItem('sidebarState');
+                setSidebarState(savedSidebarState === 'expanded');
+            } else {
+                setSidebarState(false);
+            }
+
+            // Toggle sidebar between mini/expanded (desktop) or hidden/visible (mobile)
+            menuToggle.addEventListener("click", (event) => {
+                event.stopPropagation();
+                const isExpanded = sidebar.classList.contains("expanded");
+                setSidebarState(!isExpanded);
+            });
+
+            // Close sidebar if clicking outside on mobile
+            document.addEventListener('click', (event) => {
+                if (window.innerWidth <= 768 && sidebar.classList.contains('expanded')) {
+                    if (!sidebar.contains(event.target) && !menuToggle.contains(event.target)) {
+                        setSidebarState(false);
+                    }
+                }
+            });
+
+            // Handle window resize to adjust sidebar and content states
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 768) {
+                    setSidebarState(localStorage.getItem('sidebarState') === 'expanded');
+                } else {
+                    setSidebarState(false);
+                    localStorage.setItem('sidebarState', 'mini');
+                }
+            });
+
+            // Highlight active link on page load
+            highlightActiveLink();
+        });
+    </script>
+</body>
+</html>

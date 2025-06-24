@@ -1,0 +1,207 @@
+{% extends 'base/baseseller.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+    .variant-form {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: white;
+        border-radius: 10px;
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+    }
+
+    .variant-form:hover {
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .form-title {
+        color: var(--primary-color);
+        text-align: center;
+        margin-bottom: 2rem;
+        font-size: 1.8rem;
+        font-weight: 600;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: var(--text-dark);
+        font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+        font-size: 1rem;
+        transition: var(--transition);
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+        border-color: var(--primary-color);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+    }
+
+    .submit-btn {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: var(--transition);
+        display: block;
+        width: 100%;
+        font-weight: 500;
+        margin-top: 1rem;
+    }
+
+    .submit-btn:hover {
+        background-color: var(--primary-dark);
+        transform: translateY(-2px);
+    }
+
+    .image-preview {
+        width: 150px;
+        height: 150px;
+        border: 1px dashed var(--border-color);
+        border-radius: 5px;
+        margin-top: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .image-preview img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
+    .preview-text {
+        color: var(--text-medium);
+        font-size: 0.9rem;
+    }
+
+    @media (min-width: 768px) {
+        .form-row {
+            display: flex;
+            gap: 1.5rem;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+    }
+</style>
+
+<div class="variant-form">
+    <h1 class="form-title">Add Product Variant</h1>
+    <form method="post" enctype="multipart/form-data" id="variantForm">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            {{ form.product.label_tag }}
+            {{ form.product }}
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.model_name.label_tag }}
+                {{ form.model_name }}
+            </div>
+            
+            <div class="form-group">
+                {{ form.color.label_tag }}
+                {{ form.color }}
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.color_hex.id_for_label }}">Color Hex Code</label>
+            {{ form.color_hex }}
+            {% if form.color_hex.errors %}
+                <div class="error-message">{{ form.color_hex.errors }}</div>
+            {% endif %}
+        </div>
+
+        
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.size.label_tag }}
+                {{ form.size }}
+            </div>
+
+            
+            <div class="form-group">
+                {{ form.price.label_tag }}
+                <div class="relative">
+                    {{ form.price }}
+                    <span class="absolute right-3 top-3 text-gray-500">₹</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                {{ form.stock.label_tag }}
+                {{ form.stock }}
+            </div>
+            
+            <div class="form-group">
+                {{ form.variant_image.label_tag }}
+                {{ form.variant_image }}
+                <div class="image-preview" id="imagePreview">
+                    <span class="preview-text">Image preview will appear here</span>
+                </div>
+            </div>
+        </div>
+        
+        
+
+        <button type="submit" class="submit-btn">Add Variant</button>
+    </form>
+</div>
+
+<script>
+    // Image preview functionality
+    const variantImageInput = document.querySelector('input[type="file"]');
+    const imagePreview = document.getElementById('imagePreview');
+    
+    variantImageInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            
+            reader.addEventListener('load', function() {
+                imagePreview.innerHTML = '';
+                const img = document.createElement('img');
+                img.src = this.result;
+                imagePreview.appendChild(img);
+            });
+            
+            reader.readAsDataURL(file);
+        } else {
+            imagePreview.innerHTML = '<span class="preview-text">Image preview will appear here</span>';
+        }
+    });
+    
+    // Add currency symbol to price field
+    const priceField = document.getElementById('{{ form.price.id_for_label }}');
+    priceField.style.paddingLeft = '30px';
+</script>
+
+{% endblock %}

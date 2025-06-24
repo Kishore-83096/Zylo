@@ -1,0 +1,123 @@
+{% load static %}
+{% load widget_tweaks %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - ZYLO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 min-h-screen flex flex-col">
+    <header class="bg-gray-800 text-white fixed top-0 left-0 w-full p-3 z-10">
+        <div class="container mx-auto flex justify-center items-center">
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-500">
+                ZYLO
+            </h1>
+        </div>
+    </header>
+
+    <main class="flex-grow flex items-center justify-center p-4 sm:p-6 mt-16">
+        <div class="bg-white bg-opacity-95 p-8 rounded-2xl shadow-xl max-w-2xl w-full transform transition-all duration-500 border border-gray-300">
+            <h1 class="text-3xl font-extrabold text-center text-teal-500 mb-4">Create Your Account</h1>
+
+            <!-- Messages block -->
+            {% if messages %}
+                <div class="mb-6">
+                    {% for message in messages %}
+                        <div class="
+                            p-3 rounded-lg border text-sm font-medium
+                            {% if message.tags == 'success' %}
+                                bg-green-100 text-green-700 border-green-300
+                            {% elif message.tags == 'error' %}
+                                bg-red-100 text-red-700 border-red-300
+                            {% else %}
+                                bg-gray-100 text-gray-800 border-gray-300
+                            {% endif %}
+                        ">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="POST" class="space-y-4">
+                {% csrf_token %}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="{{ form.first_name.id_for_label }}" class="block text-gray-700 font-medium">First Name</label>
+                        {{ form.first_name|add_class:"autofocus" }}
+                        {% if form.first_name.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ form.first_name.errors }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.last_name.id_for_label }}" class="block text-gray-700 font-medium">Last Name</label>
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}
+                            <p class="text-red-500 text-sm mt-1">{{ form.last_name.errors }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div>
+                    <label for="{{ form.username.id_for_label }}" class="block text-gray-700 font-medium">Username</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ form.username.errors }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="{{ form.email.id_for_label }}" class="block text-gray-700 font-medium">Email</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ form.email.errors }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="{{ form.password1.id_for_label }}" class="block text-gray-700 font-medium">Password</label>
+                    {{ form.password1 }}
+                    {% if form.password1.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ form.password1.errors }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="{{ form.password2.id_for_label }}" class="block text-gray-700 font-medium">Confirm Password</label>
+                    {{ form.password2 }}
+                    {% if form.password2.errors %}
+                        <p class="text-red-500 text-sm mt-1">{{ form.password2.errors }}</p>
+                    {% endif %}
+                </div>
+
+                {% if form.non_field_errors %}
+                    <div class="text-red-500 text-sm mt-2">
+                        {% for error in form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <button type="submit" class="mt-6 w-full py-3 px-4 bg-teal-500 text-white font-semibold rounded-lg shadow-md hover:bg-teal-600 transition duration-300 transform hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-teal-300 focus:ring-opacity-75">
+                    Create Account
+                </button>
+            </form>
+
+            <p class="mt-4 text-center text-gray-600">
+                Already have an account?
+                <a href="{% url 'account_login' %}" class="text-teal-500 hover:underline">Login here</a>.
+            </p>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 text-white bottom-0 left-0 w-full p-4">
+        <div class="container mx-auto text-center">
+            <p class="text-sm">&copy; {% now "Y" %} ZYLO. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

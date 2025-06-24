@@ -1,0 +1,326 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+    {# Only show "Registration Successful!" if the store is pending #}
+    {% if store_status == 'pending' %}
+        <h1 class="registration-status-heading">
+            <i class="fas fa-check-circle icon-success"></i> Registration Successful!
+        </h1>
+        <p class="registration-status-message">
+            Thank you for registering your store with
+            <span class="brand-name-gradient">ZYLO</span>.
+            We're excited to potentially have you join our community!
+        </p>
+    {% endif %}
+
+    <div class="next-steps-section">
+        <h2 class="next-steps-heading">What's Next?</h2>
+
+        {# Display message based on store_status #}
+        {% if store_status == 'suspended' %}
+            <p class="status-detail-message suspended-message">
+                <i class="fas fa-exclamation-triangle icon-warning"></i>
+                **Important:** Your store, **{% if user_store %}{{ user_store.store_name }}{% else %}your registered store{% endif %}**, is currently **temporarily suspended**.
+            </p>
+            <p class="notification-info">
+                This suspension is typically for a limited period while we conduct a review or address specific concerns. Please check your email ({{ request.user.email }})
+                for more details regarding the suspension, or contact our support team immediately for assistance.
+            </p>
+            <div class="action-buttons-inner">
+                <a href="#" class="btn btn-secondary">Contact Support</a>
+            </div>
+        {% elif store_status == 'rejected' %}
+            <p class="status-detail-message rejected-message">
+                <i class="fas fa-times-circle icon-error"></i>
+                Unfortunately, your store registration for **{% if user_store %}{{ user_store.store_name }}{% else %}your store{% endif %}** was **not approved** at this time.
+            </p>
+            <p class="notification-info">
+                Please check your email ({{ request.user.email }}) for more details regarding the reasons for rejection
+                or contact support to discuss your application further.
+            </p>
+            <div class="action-buttons-inner">
+                <a href="#" class="btn btn-secondary">Contact Support</a>
+            </div>
+        {% elif store_status == 'approved' %}
+            <p class="status-detail-message approved-message">
+                <i class="fas fa-thumbs-up icon-success"></i>
+                Great news! Your store, **{{ user_store.store_name }}**, has already been **approved**!
+            </p>
+            <p class="notification-info">
+                You can now proceed to set up your products, manage your inventory, and start selling on ZYLO.
+            </p>
+            <div class="action-buttons-inner">
+                <a href="{% url 'store' %}" class="btn btn-primary">Go to Seller Dashboard</a>
+            </div>
+        {% elif store_status == 'pending' %}
+            <p class="status-detail-message">
+                <i class="fas fa-hourglass-half icon-info"></i>
+                Your store, **{% if user_store %}{{ user_store.store_name }}{% else %}your registered store{% endif %}**, is currently **under review**.
+            </p>
+            <p class="notification-info">
+                Our team is diligently reviewing your application to ensure it meets our quality standards.
+                We will send an email notification to **{{ request.user.email }}**
+                once your store has been approved or if we require any further information.
+            </p>
+            <p class="timeline-info">
+                This process typically takes **24-48 business hours**. We appreciate your patience during this time.
+            </p>
+        {% else %} {# store_status is 'not_found' #}
+            <p class="status-detail-message">
+                <i class="fas fa-info-circle icon-info"></i>
+                It seems your seller profile hasn't been fully set up yet.
+            </p>
+            <p class="notification-info">
+                Please complete your seller profile to initiate the store registration process. Our team will review it shortly after completion.
+            </p>
+            <div class="action-buttons-inner">
+                {# Replace 'complete_seller_profile' with the actual URL name for your seller profile creation/edit page #}
+                <a href="{% url 'sellerreg' %}" class="btn btn-primary">Complete Seller Profile</a>
+            </div>
+        {% endif %}
+    </div>
+
+    {# Global action buttons #}
+    <div class="action-buttons">
+        <a href="{% url 'home' %}" class="btn btn-secondary">Go to Home Page</a>
+    </div>
+
+<style>
+    /*
+     * IMPORTANT: For production, move this <style> block's content
+     * into a separate static CSS file (e.g., 'static/css/reg_success_styles.css')
+     * and link it in your base.html or a specific static tag.
+     * This keeps your HTML clean and improves performance.
+     */
+
+    /* Root variables (ensure these are accessible, ideally defined globally in base.html's <head>) */
+    :root {
+        --primary-dark-bg: #1a202c;
+        --primary-text-color: #ffffff;
+        --accent-teal: #2dd4bf;
+        --accent-blue: #3b82f6;
+        --gradient-start: #2dd4bf;
+        --gradient-end: #3b82f6;
+        --content-bg: #ffffff;
+        --content-bg-opacity: rgba(255, 255, 255, 0.95);
+        --text-color-dark: #333333;
+        --text-color-medium: #6b7280;
+        --border-color-light: #d1d5db;
+        --shadow-color: rgba(0, 0, 0, 0.1);
+        --shadow-xl: rgba(0, 0, 0, 0.25);
+        --logout-btn-bg: #ef4444;
+        --logout-btn-hover-bg: #dc2626;
+
+        /* New status colors */
+        --success-color: #28a745;
+        --warning-color: #ffc107;
+        --error-color: #dc3545;
+        --info-color: #17a2b8;
+    }
+
+    body {
+        background-color: var(--primary-dark-bg); /* Ensure background is set if not in base.html */
+        font-family: 'Arial', sans-serif; /* Example font */
+        margin: 0;
+        padding: 0;
+    }
+
+    .registration-status-heading,
+    .registration-status-message,
+    .next-steps-section,
+    .action-buttons {
+        max-width: 800px; /* Constrain content width */
+        width: 100%; /* Ensure it takes full width up to max-width */
+        margin-left: auto;
+        margin-right: auto;
+        box-sizing: border-box; /* Include padding in width */
+        padding: 0 15px; /* Add horizontal padding for smaller screens */
+    }
+
+    .registration-status-heading {
+        color: var(--accent-teal);
+        margin-bottom: 20px;
+        font-size: 2.5em; /* Larger heading */
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 20px; /* Added padding to headings */
+        background-color: var(--content-bg); /* Add background to headings */
+        border-radius: 8px 8px 0 0; /* Rounded top corners */
+        box-shadow: 0 2px 4px var(--shadow-color); /* Subtle shadow */
+        position: relative; /* For alignment */
+        z-index: 1; /* Ensure it's above other elements if needed */
+        margin-top: 50px; /* Spacing from top of page */
+    }
+
+    .icon-success, .icon-warning, .icon-error, .icon-info {
+        font-size: 1.2em;
+        margin-right: 15px;
+    }
+
+    .icon-success { color: var(--success-color); }
+    .icon-warning { color: var(--warning-color); }
+    .icon-error { color: var(--error-color); }
+    .icon-info { color: var(--info-color); }
+
+    .registration-status-message {
+        font-size: 1.1em;
+        color: var(--text-color-dark);
+        line-height: 1.6;
+        margin-bottom: 25px;
+        text-align: center;
+        padding: 20px; /* Added padding */
+        background-color: var(--content-bg);
+        box-shadow: 0 2px 4px var(--shadow-color); /* Subtle shadow */
+        margin-top: -10px; /* Overlap slightly with heading shadow */
+        position: relative;
+        z-index: 0;
+        border-radius: 0 0 8px 8px; /* Rounded bottom corners for this block */
+    }
+
+    .brand-name-gradient {
+        font-size: 1.2em;
+        font-weight: bold;
+        display: inline-block;
+        background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        color: transparent; /* Fallback */
+        padding: 0 4px;
+        transition: transform 0.3s ease;
+    }
+
+    .brand-name-gradient:hover {
+        transform: scale(1.05);
+    }
+
+    .next-steps-section {
+        margin-top: 30px;
+        padding: 25px 20px; /* Adjusted padding for better flow */
+        text-align: left;
+        background-color: var(--content-bg);
+        box-shadow: 0 4px 8px var(--shadow-color); /* More pronounced shadow for main content block */
+        border-radius: 8px; /* Fully rounded corners for the main content block */
+        margin-bottom: 30px; /* Space between content and action buttons */
+    }
+
+    .next-steps-heading {
+        color: var(--accent-blue);
+        margin-bottom: 20px;
+        font-size: 1.8em;
+        font-weight: 700;
+        text-align: center;
+    }
+
+    .status-detail-message,
+    .notification-info,
+    .timeline-info {
+        font-size: 1em;
+        color: var(--text-color-medium);
+        line-height: 1.5;
+        margin-bottom: 12px;
+    }
+
+    .timeline-info {
+        font-size: 0.95em;
+        font-style: italic;
+        margin-top: 20px;
+    }
+
+    .action-buttons, .action-buttons-inner {
+        margin-top: 30px; /* Adjusted margin top */
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+        padding-bottom: 20px; /* Added padding */
+        margin-bottom: 50px; /* Spacing from bottom of page */
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 14px 30px;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        font-size: 1.05em;
+    }
+
+    .btn-primary {
+        background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
+        color: var(--primary-text-color);
+        box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
+    }
+
+    .btn-primary:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0, 123, 255, 0.3);
+    }
+
+    .btn-secondary {
+        background-color: var(--content-bg);
+        color: var(--accent-blue);
+        border: 2px solid var(--accent-blue);
+        box-shadow: 0 4px 10px rgba(59, 130, 246, 0.1);
+    }
+
+    .btn-secondary:hover {
+        background-color: var(--accent-blue);
+        color: var(--primary-text-color);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(59, 130, 246, 0.2);
+    }
+
+    /* Status specific messages */
+    .approved-message {
+        color: var(--success-color);
+        font-weight: bold;
+    }
+
+    .rejected-message {
+        color: var(--error-color);
+        font-weight: bold;
+    }
+
+    .suspended-message {
+        color: var(--warning-color); /* Using warning color for suspension */
+        font-weight: bold;
+    }
+
+    /* Basic responsiveness */
+    @media (max-width: 768px) {
+        .registration-status-heading {
+            font-size: 2em;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .registration-status-message {
+            font-size: 1em;
+            padding: 15px;
+            margin-top: 0; /* Remove negative margin on small screens */
+            border-radius: 8px; /* Ensure rounded corners on small screens too */
+        }
+        .next-steps-section {
+            padding: 20px 15px;
+        }
+        .action-buttons, .action-buttons-inner {
+            flex-direction: column;
+            gap: 15px;
+            padding: 15px;
+        }
+        .btn {
+            width: 90%; /* Make buttons full width on small screens */
+            max-width: 300px; /* But not too wide */
+            margin: 0 auto; /* Center buttons */
+        }
+    }
+</style>
+{% endblock %}

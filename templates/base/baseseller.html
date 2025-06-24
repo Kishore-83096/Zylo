@@ -1,0 +1,710 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ZYLO Seller Dashboard</title>
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<style>
+    /* User-Provided Theme Variables */
+    :root {
+        --primary-color: #4361ee;
+        --primary-dark: #3a56d4;
+        --secondary-color: #3f37c9;
+        --accent-color: #4cc9f0;
+        --success-color: #4caf50;
+        --warning-color: #ff9800;
+        --danger-color: #f44336;
+        --text-dark: #2b2d42;
+        --text-medium: #6c757d;
+        --text-light: #f8f9fa;
+        --bg-light: #f8f9fa;
+        --border-color: #e9ecef;
+        --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        --card-shadow-hover: 0 10px 15px rgba(0, 0, 0, 0.1);
+        --transition: all 0.3s ease;
+    }
+    
+    /* ZYLO Dashboard Mapped Variables */
+    :root {
+        /* Mapped Palette */
+        --primary-bg: var(--bg-light);
+        --primary-text: var(--text-dark);
+        --primary-icon: var(--text-dark);
+
+        --secondary-bg: var(--primary-color); 
+        --secondary-text: var(--text-light);
+
+        --content-bg: #FFFFFF; /* Pure white for main content to pop against the light bg */
+        --content-text: var(--text-dark);
+        --content-secondary-text: var(--text-medium);
+
+        --interactive-hover-bg: var(--border-color);
+        --interactive-hover-text: var(--primary-dark);
+        
+        /* Header & Sidebar */
+        --header-bg: var(--primary-bg);
+        --sidebar-bg: var(--primary-bg);
+        --header-icon-hover: var(--primary-color);
+        --sidebar-active-bg: var(--primary-color);
+        --sidebar-active-text: var(--text-light);
+
+        /* Gradients & Buttons */
+        --logo-gradient: linear-gradient(to right, var(--primary-color), var(--accent-color));
+        --btn-primary-bg: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+        --btn-primary-hover-bg: linear-gradient(to right, var(--primary-dark), var(--primary-color));
+        --btn-logout-bg: var(--text-medium);
+        --btn-logout-hover: var(--danger-color);
+        --btn-text-color: var(--text-light);
+
+        /* Shadows & Borders */
+        --shadow-moderate: 0 2px 8px rgba(0, 0, 0, 0.07);
+
+        /* Layout Dimensions */
+        --header-height: 64px;
+        --footer-height: 50px;
+        --sidebar-mini-width: 70px;
+        --sidebar-expanded-width: 240px;
+        --content-margin: 25px;
+        --content-padding: 25px;
+        --content-mobile-padding: 15px;
+    }
+
+     /* Reset & base */
+    * {
+        box-sizing: border-box;
+    }
+
+    html, body {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden; /* Prevent horizontal scrollbar due to transitions */
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        color: var(--text-color-dark); /* Default text color */
+    }
+
+
+
+    /* Scrollbar Styles */
+    body::-webkit-scrollbar {
+        width: 10px;
+    }
+    body::-webkit-scrollbar-track {
+        background: var(--primary-bg);
+    }
+    body::-webkit-scrollbar-thumb {
+        background-color: var(--primary-color);
+        border-radius: 10px;
+        border: 2px solid var(--primary-bg);
+    }
+    body::-webkit-scrollbar-thumb:hover {
+        background-color: var(--primary-dark);
+    }
+
+    .sidebar::-webkit-scrollbar {
+        width: 8px;
+    }
+    .sidebar::-webkit-scrollbar-track {
+        background: var(--sidebar-bg);
+    }
+    .sidebar::-webkit-scrollbar-thumb {
+        background-color: var(--primary-color);
+        border-radius: 10px;
+        border: 2px solid var(--sidebar-bg);
+    }
+    .sidebar::-webkit-scrollbar-thumb:hover {
+        background-color: var(--primary-dark);
+    }
+
+    /* Header Styles */
+    .header {
+        position: sticky;
+        top: 0;
+        width: 100%;
+        height: var(--header-height);
+        background-color: var(--header-bg);
+        display: flex;
+        align-items: center;
+        padding: 0 25px;
+        z-index: 10000;
+        box-shadow: var(--shadow-moderate);
+        justify-content: space-between;
+    }
+
+    .header .logo {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        font-weight: 700;
+        font-size: 1.8rem;
+    }
+    .header .logo .gradient-text {
+        background: var(--logo-gradient);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .header-right {
+        display: flex;
+        align-items: center;
+        gap: 20px; /* Adjusted gap for new icon sizes */
+        margin-left: auto;
+    }
+
+    .menu-toggle {
+        font-size: 1.6rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: var(--transition);
+        cursor: pointer;
+        padding-right: 20px;
+        color: var(--primary-icon);
+    }
+
+    .menu-toggle .logo-small {
+        font-size: 1.5rem;
+        font-weight: 700;
+        display: none;
+    }
+
+    .menu-toggle:hover {
+        color: var(--header-icon-hover);
+        transform: scale(1.05);
+    }
+
+    /* Search bar - UPDATED */
+    .search-bar {
+        position: relative;
+        display: flex;
+        align-items: center;
+        border-radius: 10px;
+        background: var(--content-bg);
+        padding: 5px 6px; /* Adjusted padding */
+        box-shadow: var(--card-shadow);
+        width: 45px; /* Collapsed width */
+        transition: var(--transition);
+        border: 1px solid var(--border-color);
+        cursor: pointer;
+        border-radius: 5px;
+    }
+
+    .search-bar:hover,
+    .search-bar:focus-within {
+        width: 280px;
+        box-shadow: var(--card-shadow-hover);
+        border-color: var(--primary-color);
+        cursor: text;
+    }
+
+    .search-bar input {
+        flex: 1;
+        width: 0; /* Initially hidden */
+        opacity: 0; /* Initially hidden */
+        border: none;
+        outline: none;
+        font-size: 0.95rem;
+        background: transparent;
+        color: var(--content-text);
+        padding: 0;
+        transition: var(--transition);
+        pointer-events: none; /* Block clicks when hidden */
+    }
+    
+    .search-bar:hover input,
+    .search-bar:focus-within input {
+        width: auto;
+        opacity: 1;
+        padding: 0 8px; /* Add padding when visible */
+        pointer-events: auto;
+    }
+
+    .search-bar button {
+        background: none;
+        border: none;
+        color: var(--content-secondary-text);
+        cursor: pointer;
+        font-size: 1.1rem;
+        transition: var(--transition);
+        padding: 3px 6px; /* Added padding for better click area */
+    }
+
+    .search-bar button:hover {
+        color: var(--primary-color);
+    }
+
+    /* Icon buttons */
+    .icon-btn {
+        background: none;
+        border: none;
+        color: var(--primary-icon);
+        cursor: pointer;
+        font-size: 1.5rem;
+        transition: var(--transition);
+        text-decoration: none;
+        display: flex; /* Ensures vertical alignment */
+        align-items: center;
+    }
+
+    /* Home Icon - UPDATED */
+    .icon-image {
+        width: 50px;
+        height: 34px;
+        object-fit: cover;
+        border-radius: 5px;
+        border: 1px solid var(--primary-icon);
+        transition: var(--transition);
+
+    }
+
+    .icon-btn:hover,
+    .icon-btn:focus {
+        color: var(--header-icon-hover);
+        transform: scale(1.1);
+    }
+    
+    /* Profile Pic - UPDATED */
+    .profile-nav-img {
+        width: 34px;
+        height: 34px;
+        border-radius: 5px;
+        object-fit: cover;
+        border: 1px solid var(--primary-icon);
+        transition: var(--transition);
+    }
+
+    .profile-nav-img:hover {
+        border-color: var(--header-icon-hover);
+        transform: scale(1.08);
+    }
+
+    /* Fallback profile icon - UPDATED */
+    .profile-nav-icon {
+        font-size: 1.9rem; /* Adjusted to match image size */
+        color: var(--primary-icon);
+    }
+
+    /* Superuser Button */
+    .superuser-btn {
+        background: none;
+        border: none;
+        color: var(--primary-icon);
+        cursor: pointer;
+        font-size: 1.5rem;
+        transition: var(--transition);
+        text-decoration: none;
+    }
+
+    .superuser-btn:hover {
+        color: var(--header-icon-hover);
+        transform: scale(1.1);
+    }
+
+    /* Sidebar */
+    .sidebar {
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        bottom: 0;
+        width: var(--sidebar-mini-width);
+        background: var(--sidebar-bg);
+        padding: 20px 0;
+        padding-bottom: calc(var(--footer-height) + 20px);
+        transition: width 0.3s ease, transform 0.3s ease;
+        z-index: 9999;
+        overflow-y: auto;
+        overflow-x: hidden;
+        box-shadow: 2px 0 8px rgba(0,0,0,0.05);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sidebar.expanded {
+        width: var(--sidebar-expanded-width);
+    }
+
+    .sidebar nav {
+        flex-grow: 1;
+        padding: 0 10px;
+    }
+
+    .sidebar nav a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        padding: 12px 10px;
+        color: var(--primary-text);
+        text-decoration: none;
+        font-weight: 500;
+        border-radius: 4px;
+        margin-bottom: 8px;
+        transition: var(--transition);
+        font-size: 0.9rem;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+
+    .sidebar nav a i {
+        font-size: 1.3rem;
+        min-width: 25px;
+        text-align: center;
+    }
+
+    .sidebar nav a span {
+        display: none;
+        opacity: 0;
+        transition: opacity 0.1s ease, width 0.1s ease;
+        flex-grow: 1;
+    }
+
+    .sidebar.expanded nav a {
+        justify-content: flex-start;
+    }
+
+    .sidebar.expanded nav a span {
+        display: inline-block;
+        opacity: 1;
+    }
+
+    .sidebar nav a:hover {
+        background-color: var(--interactive-hover-bg);
+        color: var(--interactive-hover-text);
+        transform: translateY(-2px);
+    }
+
+    .sidebar nav a.active,
+    .sidebar nav a.active:hover {
+        background-color: var(--sidebar-active-bg);
+        color: var(--sidebar-active-text);
+        font-weight: 600;
+        box-shadow: var(--card-shadow);
+    }
+
+    /* Bottom Button */
+    .sidebar .bottom-btn {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(100% - 40px);
+        border: none;
+        padding: 12px 0;
+        font-weight: bold;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: var(--transition);
+        color: var(--btn-text-color);
+        border-radius: 4px;
+    }
+
+    .logout-btn {
+        background-color: var(--btn-logout-bg);
+        
+    }
+
+    .logout-btn:hover {
+        background-color: var(--btn-logout-hover);
+    }
+
+    .login-btn {
+        background: var(--btn-primary-bg);
+    }
+
+    .login-btn:hover {
+        background: var(--btn-primary-hover-bg);
+    }
+
+    .bottom-btn span {
+        display: none;
+        opacity: 0;
+        transition: opacity 0.1s ease;
+    }
+
+    .sidebar.expanded .bottom-btn {
+        left: 20px;
+        transform: translateX(0);
+        justify-content: flex-start;
+        padding: 12px 20px;
+    }
+
+    .sidebar.expanded .bottom-btn span {
+        display: inline-block;
+        opacity: 1;
+    }
+
+    /* Content area */
+    .content {
+        padding: var(--content-padding);
+        min-height: calc(100vh - var(--header-height) - var(--footer-height) - (2 * var(--content-margin)));
+        position: relative;
+        z-index: 1;
+        background-color: var(--content-bg);
+        box-shadow: 0 0 15px rgba(0,0,0,0.04);
+        border-radius: 10px;
+        margin-top: var(--content-margin);
+        margin-bottom: var(--content-margin);
+        border: 1px solid var(--border-color);
+        width: calc(100% - var(--sidebar-mini-width) - (2 * var(--content-margin)));
+        margin-left: calc(var(--sidebar-mini-width) + var(--content-margin));
+        transition: width 0.3s ease, margin-left 0.3s ease;
+    }
+
+    body.sidebar-expanded .content {
+        width: calc(100% - var(--sidebar-expanded-width) - (2 * var(--content-margin)));
+        margin-left: calc(var(--sidebar-expanded-width) + var(--content-margin));
+    }
+
+    /* Info cards */
+    .info-card {
+        border-radius: 10px;
+        box-shadow: var(--card-shadow);
+        background-color: var(--content-bg);
+        border: 1px solid var(--border-color);
+        transition: var(--transition);
+    }
+    .info-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--card-shadow-hover);
+    }
+    .info-card i {
+        color: var(--primary-color);
+    }
+    .info-card-container {
+        border-radius: 10px;
+        background-color: var(--bg-light);
+        border: 1px solid var(--border-color);
+    }
+
+    /* Footer */
+    footer {
+        height: var(--footer-height);
+        line-height: var(--footer-height);
+        background: var(--text-dark);
+        color: var(--text-light);
+        text-align: center;
+        font-size: 0.8rem;
+        width: 100%;
+    }
+
+    /* --- Media Queries --- */
+    @media (max-width: 768px) {
+        .header .logo {
+            display: none;
+        }
+        .menu-toggle {
+            position: static;
+            padding-right: 0;
+        }
+        .menu-toggle .logo-small {
+            display: inline-block;
+        }
+        .header-right {
+            gap: 15px;
+            margin-left: auto;
+        }
+        .sidebar {
+            width: var(--sidebar-expanded-width);
+            transform: translateX(-100%);
+            padding: 20px;
+        }
+        .sidebar.expanded {
+            transform: translateX(0);
+        }
+        .content, body.sidebar-expanded .content {
+            width: calc(100% - (2 * var(--content-mobile-padding)));
+            margin-left: var(--content-mobile-padding);
+            margin-right: var(--content-mobile-padding);
+        }
+        .sidebar nav a, .sidebar .bottom-btn {
+            justify-content: flex-start;
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+        .sidebar nav a span, .sidebar .bottom-btn span {
+            display: inline-block;
+            opacity: 1;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .header-right {
+            gap: 10px;
+        }
+        .search-bar {
+            display: none;
+        }
+        .sidebar, .sidebar.expanded {
+            width: 200px;
+        }
+
+        /* UPDATED icon sizes for mobile */
+        .icon-image, .profile-nav-img {
+            width: 30px;
+            height: 30px;
+        }
+        .profile-nav-icon {
+            font-size: 1.7rem;
+        }
+    }
+</style>
+<body>
+    <header class="header">
+        <div class="menu-toggle" id="menu-toggle" aria-label="Toggle sidebar">
+            <i class="fas fa-bars"></i>
+            <h1 class="logo-small gradient-text">ZYLO</h1>
+        </div>
+        <div class="logo">
+            <h1 class="gradient-text">
+                {{ store_name | default:"ZYLO Seller" }}
+            </h1>
+        </div>
+        <div class="header-right">
+            <div class="search-bar" role="search" tabindex="0">
+                <input type="text" placeholder="Search..." aria-label="Search products" />
+                <button aria-label="Search" tabindex="-1"><i class="fas fa-search"></i></button>
+            </div>
+            <a href="{% url 'home' %}" class="icon-btn" aria-label="Home">
+                <img src="{{ MEDIA_URL }}index/ZYLO_LOGO.png" 
+                     alt="Home" 
+                     class="icon-image">
+            </a>
+            {% if is_superuser %}
+                <a href="{% url 'admin:index' %}" class="superuser-btn" aria-label="Superuser Dashboard" target="_blank" rel="noopener noreferrer">
+                    <i class="fas fa-user-shield"></i>
+                </a>
+            {% endif %}
+
+            <a href="{% url 'storeprofile' %}" class="icon-btn profile-btn" aria-label="User Profile">
+                {% if logo.image %}
+                    <img src="{{ logo.image.url }}" alt="{{ user_name }} Profile" class="profile-nav-img">
+                {% else %}
+                    <i class="fas fa-user-circle profile-nav-icon"></i></i>
+                {% endif %}
+            </a>
+        </div>
+    </header>
+
+    <aside class="sidebar" id="sidebar" aria-label="Sidebar navigation">
+        <nav>
+            <a href="{% url 'store' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><i class="fas fa-chart-line"></i> <span>Dashboard</span></a>
+            <a href="{% url 'product_management' %}" class="{% if request.resolver_match.url_name == 'products' %}active{% endif %}"><i class="fas fa-boxes"></i> <span>Products</span></a>
+            <a href="#" class="{% if request.resolver_match.url_name == 'orders' %}active{% endif %}"><i class="fas fa-receipt"></i> <span>Orders</span></a>
+            <a href="#" class="{% if request.resolver_match.url_name == 'sales_reports' %}active{% endif %}"><i class="fas fa-chart-bar"></i> <span>Sales Reports</span></a>
+            <a href="#" class="{% if request.resolver_match.url_name == 'messages' %}active{% endif %}"><i class="fas fa-comments"></i> <span>Messages</span></a>
+            <a href="#" class="{% if request.resolver_match.url_name == 'customer_care' %}active{% endif %}"><i class="fas fa-question-circle"></i> <span>Customer Care</span></a>
+            <a href="#" class="{% if request.resolver_match.url_name == 'about' %}active{% endif %}"><i class="fas fa-info-circle"></i> <span>About</span></a>
+        </nav>
+
+        {% if user.is_authenticated %}
+            <button class="bottom-btn logout-btn" onclick="window.location.href='{% url 'account_logout' %}'" aria-label="Logout">
+                <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+            </button>
+        {% else %}
+            <button class="bottom-btn login-btn" onclick="window.location.href='{% url 'account_login' %}'" aria-label="Login">
+                <i class="fas fa-sign-in-alt"></i> <span>Login</span>
+            </button>
+        {% endif %}
+    </aside>
+
+    <main class="content" id="content">
+        {% block content %}
+            <h2 class="text-2xl font-bold mb-4">Welcome to ZYLO!</h2>
+            <p class="text-gray-700">This is the main content area of your user page. You can customize this section with dashboards, product listings, etc.</p>
+            <div class="mt-8 p-6 bg-gray-100 rounded-lg shadow-md">
+                <h3 class="text-xl font-semibold mb-2">Hover over elements to see changes:</h3>
+                <ul class="list-disc list-inside space-y-2">
+                    <li>Try hovering over the **hamburger menu** (top left).</li>
+                    <li>Hover over the search bar.</li>
+                    <li>Hover over the search button.</li>
+                    <li>Hover over the shopping cart and user profile icons in the header.</li>
+                    <li>Open and close the sidebar, then hover over the sidebar navigation links.</li>
+                    <li>Hover over the logout button in the sidebar.</li>
+                </ul>
+            </div>
+        {% endblock %}
+    </main>
+
+    <footer>&copy; 2025 ZYLO. All rights reserved.</footer>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+        const menuToggle = document.getElementById("menu-toggle");
+        const sidebar = document.getElementById("sidebar");
+        const body = document.body;
+
+        function setSidebarState(isExpanded) {
+            if (isExpanded) {
+                sidebar.classList.add("expanded");
+                body.classList.add("sidebar-expanded");
+                localStorage.setItem('sidebarState', 'expanded');
+            } else {
+                sidebar.classList.remove("expanded");
+                body.classList.remove("sidebar-expanded");
+                localStorage.setItem('sidebarState', 'mini');
+            }
+        }
+
+        if (window.innerWidth > 768) {
+            const savedSidebarState = localStorage.getItem('sidebarState');
+            setSidebarState(savedSidebarState === 'expanded');
+        } else {
+            setSidebarState(false);
+        }
+
+        menuToggle.addEventListener("click", (event) => {
+            event.stopPropagation();
+            const isExpanded = sidebar.classList.contains("expanded");
+            setSidebarState(!isExpanded);
+        });
+
+        document.addEventListener('click', (event) => {
+            if (window.innerWidth <= 768 && sidebar.classList.contains('expanded')) {
+                if (!sidebar.contains(event.target) && !menuToggle.contains(event.target)) {
+                    setSidebarState(false);
+                }
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                setSidebarState(localStorage.getItem('sidebarState') === 'expanded');
+            } else {
+                setSidebarState(false);
+                localStorage.setItem('sidebarState', 'mini');
+            }
+        });
+
+        const currentPath = window.location.pathname;
+        const navLinks = document.querySelectorAll('.sidebar nav a');
+        navLinks.forEach(link => {
+            const linkPath = link.getAttribute('href');
+            const homeUrl = "{% url 'home' %}";
+            const storeUrl = "{% url 'store' %}";
+            const productManagementUrl = "{% url 'product_management' %}";
+
+            if (linkPath === currentPath ||
+                (linkPath === homeUrl && (currentPath === '/' || currentPath === homeUrl)) ||
+                (linkPath === storeUrl && currentPath.includes(storeUrl.slice(0, -1))) ||
+                (linkPath === productManagementUrl && currentPath.includes(productManagementUrl.slice(0, -1)))) {
+                link.classList.add('active');
+            }
+        });
+        });
+    </script>
+</body>
+</html>

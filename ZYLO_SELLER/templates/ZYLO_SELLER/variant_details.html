@@ -1,0 +1,715 @@
+{% extends 'base/baseseller.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+    /* Modern, Clean Layout with Professional Color Scheme */
+    :root {
+        --primary-color: #4361ee;
+        --primary-dark: #3a0ca3;
+        --secondary-color: #4895ef;
+        --danger-color: #f72585;
+        --success-color: #4cc9f0;
+        --warning-color: #f8961e;
+        --light-bg: #f8fafc;
+        --border-color: #e2e8f0;
+        --text-dark: #1e293b;
+        --text-medium: #64748b;
+        --text-light: #94a3b8;
+    }
+    
+    
+    
+    /* Header Section */
+    .variant-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .variant-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+    
+    .variant-title svg {
+        margin-right: 10px;
+        width: 24px;
+        height: 24px;
+        color: var(--primary-color);
+    }
+    
+    /* Main Content Grid */
+    .variant-content-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    
+    @media (min-width: 992px) {
+        .variant-content-grid {
+            grid-template-columns: 350px 1fr;
+        }
+    }
+    
+    /* Image Section */
+    .variant-image-section {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        padding: 20px;
+        border: 1px solid var(--border-color);
+    }
+    
+    .variant-image-container {
+        background: var(--light-bg);
+        border-radius: 6px;
+        aspect-ratio: 1/1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+        margin-bottom: 15px;
+    }
+    
+    .variant-image {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        padding: 20px;
+        mix-blend-mode: multiply;
+    }
+    
+    /* Details Section */
+    .variant-details-section {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        padding: 25px;
+        border: 1px solid var(--border-color);
+    }
+    
+    /* Status Card */
+    .status-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        background: var(--light-bg);
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-left: 4px solid var(--primary-color);
+    }
+    
+    .status-info {
+        flex: 1;
+    }
+    
+    .status-label {
+        font-size: 0.9rem;
+        color: var(--text-medium);
+        margin-bottom: 5px;
+    }
+    
+    .status-value {
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+    
+    .status-badge {
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    
+    .status-active {
+        background-color: rgba(74, 222, 128, 0.1);
+        color: #16a34a;
+    }
+    
+    .status-inactive {
+        background-color: rgba(248, 113, 113, 0.1);
+        color: #dc2626;
+    }
+    
+    /* Inventory Card */
+    .inventory-card {
+        padding: 15px;
+        background: var(--light-bg);
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    
+    .inventory-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+    
+    .inventory-title {
+        font-size: 0.9rem;
+        color: var(--text-medium);
+        font-weight: 500;
+    }
+    
+    .inventory-count {
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+    
+    .inventory-bar {
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 5px;
+    }
+    
+    .inventory-progress {
+        height: 100%;
+        border-radius: 4px;
+    }
+    
+    .inventory-high { background: var(--success-color); width: 100%; }
+    .inventory-medium { background: var(--warning-color); width: 50%; }
+    .inventory-low { background: var(--danger-color); width: 20%; }
+    
+    .inventory-note {
+        font-size: 0.8rem;
+        color: var(--text-medium);
+    }
+    
+    /* Details Grid */
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+        margin: 20px 0;
+    }
+    
+    .detail-card {
+        padding: 15px;
+        background: var(--light-bg);
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+    }
+    
+    .detail-label {
+        font-size: 0.85rem;
+        color: var(--text-medium);
+        margin-bottom: 5px;
+        display: block;
+    }
+    
+    .detail-value {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+    
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border-color);
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        border: 1px solid transparent;
+    }
+    
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .btn-secondary {
+        background: var(--secondary-color);
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background: #3a7bc8;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .btn-outline {
+        background: white;
+        color: var(--primary-color);
+        border: 1px solid var(--primary-color);
+    }
+    
+    .btn-outline:hover {
+        background: var(--light-bg);
+        transform: translateY(-2px);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .btn-danger {
+        background: white;
+        color: var(--danger-color);
+        border: 1px solid var(--danger-color);
+    }
+    
+    .btn-danger:hover {
+        background: rgba(247, 37, 133, 0.05);
+        transform: translateY(-2px);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .btn-icon {
+        margin-right: 8px;
+        width: 18px;
+        height: 18px;
+    }
+    
+    /* Other Variants Section */
+    .other-variants-section {
+        margin-top: 40px;
+    }
+    
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .section-title {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin: 0;
+    }
+    
+    .variants-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+    }
+    
+    .variant-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        border: 1px solid var(--border-color);
+    }
+    
+    .variant-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border-color: var(--primary-color);
+    }
+    
+    .variant-card-image {
+        width: 100%;
+        height: 200px;
+        object-fit: contain;
+        background: var(--light-bg);
+        padding: 20px;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .variant-card-body {
+        padding: 15px;
+    }
+    
+    .variant-card-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 8px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .variant-card-price {
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 8px;
+        font-size: 1.2rem;
+    }
+    
+    .variant-card-stock {
+        font-size: 0.9rem;
+        color: var(--text-medium);
+        display: flex;
+        align-items: center;
+    }
+    
+    .variant-card-stock svg {
+        margin-right: 5px;
+        width: 16px;
+        height: 16px;
+        color: var(--text-medium);
+    }
+    
+    .variant-card-link {
+        display: block;
+        text-align: center;
+        padding: 8px;
+        background: var(--light-bg);
+        color: var(--primary-color);
+        font-weight: 500;
+        margin-top: 15px;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+        border: 1px solid var(--border-color);
+        font-size: 0.9rem;
+    }
+    
+    .variant-card-link:hover {
+        background: var(--primary-color);
+        color: white;
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        background: var(--light-bg);
+        border-radius: 8px;
+        border: 1px dashed var(--border-color);
+    }
+    
+    .empty-state svg {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 20px;
+        color: var(--text-medium);
+    }
+    
+    .empty-state h3 {
+        color: var(--text-medium);
+        font-weight: 500;
+        margin-bottom: 20px;
+    }
+    
+    /* Toggle Switch */
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+    }
+    
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 24px;
+    }
+    
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    
+    input:checked + .slider {
+        background-color: var(--primary-color);
+    }
+    
+    input:checked + .slider:before {
+        transform: translateX(26px);
+    }
+</style>
+
+<div class="variant-detail-container">
+    <!-- Header with Variant Name -->
+    <div class="variant-header">
+        <h1 class="variant-title">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+            </svg>
+            {{variant}}
+        </h1>
+    </div>
+    
+    <!-- Main Content Grid -->
+    <div class="variant-content-grid">
+        <!-- Image Section -->
+        <div class="variant-image-section">
+            <div class="variant-image-container">
+                {% if variant.variant_image %}
+                    <img src="{{ variant.variant_image.url }}" alt="{{ variant.model_name }}" class="variant-image">
+                {% else %}
+                    <svg class="variant-image" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                {% endif %}
+            </div>
+            
+            <div class="action-buttons">
+                <a href="{% url 'updatevariant' variant.id %}" class="btn btn-secondary">
+                    <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                    Edit Variant
+                </a>
+                
+                <form method="post" action="{% url 'delete_variant' variant.id %}" class="delete-form" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this variant? This action cannot be undone.');">
+                        <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                        Delete Variant
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Details Section -->
+        <div class="variant-details-section">
+            <!-- Status Card -->
+            <div class="status-card">
+                <div class="status-info">
+                    <div class="status-label">Availability Status</div>
+                    <div class="status-value">This variant is currently {% if variant.on_sale %}active{% else %}inactive{% endif %}</div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="on-sale-toggle" {% if variant.on_sale %}checked{% endif %}>
+                    <span class="slider"></span>
+                </label>
+                <span class="status-badge {% if variant.on_sale %}status-active{% else %}status-inactive{% endif %}">
+                    {% if variant.on_sale %}Active{% else %}Inactive{% endif %}
+                </span>
+            </div>
+            
+            <!-- Inventory Card -->
+            <div class="inventory-card">
+                <div class="inventory-header">
+                    <div class="inventory-title">Current Inventory</div>
+                    <div class="inventory-count">{{ variant.stock }} units available</div>
+                </div>
+                <div class="inventory-bar">
+                    <div class="inventory-progress {% if variant.stock > 10 %}inventory-high{% elif variant.stock > 5 %}inventory-medium{% else %}inventory-low{% endif %}"></div>
+                </div>
+                <div class="inventory-note">
+                    {% if variant.stock > 10 %}
+                        Healthy stock level
+                    {% elif variant.stock > 5 %}
+                        Moderate stock - consider reordering soon
+                    {% else %}
+                        Low stock - reorder immediately
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Details Grid -->
+            <div class="details-grid">
+                <div class="detail-card">
+                    <span class="detail-label">Price</span>
+                    <span class="detail-value">${{ variant.price }}</span>
+                </div>
+
+                <div class="detail-card">
+                    <span class="detail-label">Model</span>
+                    <span class="detail-value">{{ variant.model_name}}</span>
+                </div>
+
+                
+                <div class="detail-card">
+                    <span class="detail-label">Color</span>
+                    <span class="detail-value">{{ variant.color }}</span>
+                </div>
+                
+                <div class="detail-card">
+                    <span class="detail-label">Size</span>
+                    <span class="detail-value">{{ variant.size }}</span>
+                </div>
+                
+                <div class="detail-card">
+                    <span class="detail-label">SKU</span>
+                    <span class="detail-value">{{ variant.sku|default:"Not set" }}</span>
+                </div>
+                
+                <div class="detail-card">
+                    <span class="detail-label">Created On</span>
+                    <span class="detail-value">{{ variant.created_at|date:"M d, Y" }}</span>
+                </div>
+                
+                <div class="detail-card">
+                    <span class="detail-label">Last Updated</span>
+                    <span class="detail-value">{{ variant.updated_at|date:"M d, Y" }}</span>
+                </div>
+            </div>
+            
+            <!-- Specifications Button -->
+            <div class="action-buttons">
+                <a href="#" class="btn btn-primary">
+                    <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Manage Specifications
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Other Variants Section -->
+    <div class="other-variants-section">
+        <div class="section-header">
+            <h2 class="section-title">Other Variants of This Product</h2>
+            <a href="{% url 'addvariant' %}" class="btn btn-outline">
+                <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Add New Variant
+            </a>
+        </div>
+        
+        {% if other_variants %}
+        <div class="variants-grid">
+            {% for other_variant in other_variants %}
+            <div class="variant-card">
+                {% if other_variant.variant_image %}
+                    <img src="{{ other_variant.variant_image.url }}" alt="{{ other_variant.model_name }}" class="variant-card-image">
+                {% else %}
+                    <div class="variant-card-image">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                {% endif %}
+                <div class="variant-card-body">
+                    <h3 class="variant-card-title">{{ other_variant.model_name }}</h3>
+                    <div class="variant-card-price">${{ other_variant.price }}</div>
+                    <div class="variant-card-stock">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                        </svg>
+                        {{ other_variant.stock }} in stock
+                    </div>
+                    <a href="{% url 'variantdet' other_variant.id %}" class="variant-card-link">
+                        View Details
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+            </svg>
+            <h3>No other variants found for this product</h3>
+            <a href="{% url 'addvariant' %}" class="btn btn-primary">
+                <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Add First Variant
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggle = document.getElementById('on-sale-toggle');
+    const statusText = document.querySelector('.status-badge');
+    const statusValue = document.querySelector('.status-value');
+    
+    toggle.addEventListener('change', function() {
+        const isOnSale = this.checked;
+        const variantId = "{{ variant.id }}";
+        
+        // Update the UI immediately
+        if (isOnSale) {
+            statusText.textContent = 'Active';
+            statusText.className = 'status-badge status-active';
+            statusValue.textContent = 'This variant is currently active';
+        } else {
+            statusText.textContent = 'Inactive';
+            statusText.className = 'status-badge status-inactive';
+            statusValue.textContent = 'This variant is currently inactive';
+        }
+        
+        // Send AJAX request to update the backend
+        fetch(`/sell_zylo/update_on_sale/${variantId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                on_sale: isOnSale
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to update status');
+            }
+            return response.json();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Revert the UI if the request fails
+            toggle.checked = !isOnSale;
+            if (!isOnSale) {
+                statusText.textContent = 'Active';
+                statusText.className = 'status-badge status-active';
+                statusValue.textContent = 'This variant is currently active';
+            } else {
+                statusText.textContent = 'Inactive';
+                statusText.className = 'status-badge status-inactive';
+                statusValue.textContent = 'This variant is currently inactive';
+            }
+            alert('Failed to update availability status. Please try again.');
+        });
+    });
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,743 @@
+{% extends 'base/baseseller.html' %}
+{% load static %}
+
+{% block content %}
+<div class="seller-dashboard">
+    {% if seller_profile_exists %}
+        <!-- Header Section -->
+        <div class="dashboard-header">
+            <div class="store-branding">
+                {% if logo and logo.image %}
+                    <img src="{{ logo.image.url }}" alt="{{ store_name }} Logo" class="store-logo">
+                {% else %}
+                    <div class="store-logo-placeholder">
+                        <i class="fas fa-store"></i>
+                    </div>
+                {% endif %}
+                <div class="store-info">
+                    <h1>{{ store_name }}</h1>
+                    <p class="store-status"><i class="fas fa-circle status-active"></i> Store is active</p>
+                </div>
+            </div>
+            <div class="quick-actions">
+                <a href="{% url 'add_product' %}" class="btn-action btn-primary">
+                    <i class="fas fa-plus"></i> Add Product
+                </a>
+                <a href="#" class="btn-action btn-secondary">
+                    <i class="fas fa-chart-line"></i> View Analytics
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-box-open"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>Total Products</h3>
+                    <p class="stat-value">{{ total_products }}</p>
+                    
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>Active Products</h3>
+                    <p class="stat-value">{{ total_active_products }}</p>
+                    <p class="stat-change">{{ active_percentage }} of total</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>Pending Orders</h3>
+                    <p class="stat-value">24</p>
+                    <p class="stat-change">+3 today</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>This Month's Sales</h3>
+                    <p class="stat-value">$3,245</p>
+                    <p class="stat-change">12% increase</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity and Products -->
+        <div class="content-grid">
+            <!-- Recent Products Section -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-boxes"></i> Recent Products</h2>
+                    <a href="{% url 'product_management' %}" class="view-all">View All</a>
+                </div>
+                <div class="products-grid">
+                    {% for product in user_products|slice:":6" %}
+                    <a href="{% url 'variantdet' product.id %}" class="product-card">
+                        <div class="product-image">
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                            <span class="product-status {% if product.on_sale %}active{% else %}inactive{% endif %}">
+                                {% if product.on_sale %}Active{% else %}Inactive{% endif %}
+                            </span>
+                        </div>
+                        <div class="product-info">
+                            <h3>{{ product.name|truncatechars:30 }}</h3>
+                            <div class="product-meta">
+                                <span><i class="fas fa-eye"></i> {{ product.views|default:"0" }}</span>
+                                <span><i class="fas fa-shopping-cart"></i> {{ product.sold|default:"0" }}</span>
+                            </div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Recent Orders Section -->
+            <div class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-clipboard-list"></i> Recent Orders</h2>
+                    <a href="#" class="view-all">View All</a>
+                </div>
+                <div class="orders-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>#ORD-2023-001</td>
+                                <td>John Smith</td>
+                                <td>Today, 10:30 AM</td>
+                                <td>$125.99</td>
+                                <td><span class="status processing">Processing</span></td>
+                            </tr>
+                            <tr>
+                                <td>#ORD-2023-002</td>
+                                <td>Sarah Johnson</td>
+                                <td>Today, 09:15 AM</td>
+                                <td>$89.50</td>
+                                <td><span class="status shipped">Shipped</span></td>
+                            </tr>
+                            <tr>
+                                <td>#ORD-2023-003</td>
+                                <td>Michael Brown</td>
+                                <td>Yesterday, 4:45 PM</td>
+                                <td>$245.75</td>
+                                <td><span class="status delivered">Delivered</span></td>
+                            </tr>
+                            <tr>
+                                <td>#ORD-2023-004</td>
+                                <td>Emily Davis</td>
+                                <td>Yesterday, 2:20 PM</td>
+                                <td>$67.30</td>
+                                <td><span class="status pending">Pending</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Chart (Placeholder) -->
+        <div class="chart-section">
+            <div class="section-header">
+                <h2><i class="fas fa-chart-line"></i> Sales Performance</h2>
+                <div class="time-filters">
+                    <button class="time-filter active">7D</button>
+                    <button class="time-filter">30D</button>
+                    <button class="time-filter">3M</button>
+                    <button class="time-filter">1Y</button>
+                </div>
+            </div>
+            <div class="chart-container">
+                <div class="chart-placeholder">
+                    <p>Sales chart will be displayed here</p>
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+            </div>
+        </div>
+
+    {% else %}
+        <!-- Registration Prompt -->
+        <div class="registration-prompt">
+            <div class="prompt-content">
+                <div class="prompt-icon">
+                    <i class="fas fa-store-alt"></i>
+                </div>
+                <div class="prompt-text">
+                    <h2>Setup Your Seller Account</h2>
+                    <p>Complete your seller profile to start selling your products and reach thousands of customers.</p>
+                    <a href="{% url 'sellerreg' %}" class="btn-register-store">
+                        <i class="fas fa-rocket"></i> Launch Your Store
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+<style>
+    /* --- Base Styles --- */
+    :root {
+        --primary-color: #4361ee;
+        --primary-dark: #3a56d4;
+        --secondary-color: #3f37c9;
+        --accent-color: #4cc9f0;
+        --success-color: #4caf50;
+        --warning-color: #ff9800;
+        --danger-color: #f44336;
+        --text-dark: #2b2d42;
+        --text-medium: #6c757d;
+        --text-light: #f8f9fa;
+        --bg-light: #f8f9fa;
+        --border-color: #e9ecef;
+        --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        --card-shadow-hover: 0 10px 15px rgba(0, 0, 0, 0.1);
+        --transition: all 0.3s ease;
+    }
+
+    
+
+    .seller-dashboard {
+        max-width: 1400px;
+        margin: 2rem auto;
+        padding: 0 1.5rem;
+    }
+
+    /* --- Header Styles --- */
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .store-branding {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .store-logo {
+        width: 80px;
+        height: 80px;
+        border-radius: 6px;
+        object-fit: cover;
+        border: 3px solid white;
+        box-shadow: var(--card-shadow);
+    }
+
+    .store-logo-placeholder {
+        width: 80px;
+        height: 80px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        box-shadow: var(--card-shadow);
+    }
+
+    .store-info h1 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--text-dark);
+    }
+
+    .store-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-medium);
+        font-size: 0.9rem;
+    }
+
+    .status-active {
+        color: var(--success-color);
+        font-size: 0.7rem;
+    }
+
+    .quick-actions {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 4px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: var(--transition);
+        box-shadow: var(--card-shadow);
+    }
+
+    .btn-primary {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .btn-secondary {
+        background-color: white;
+        color: var(--primary-color);
+        border: 1px solid var(--primary-color);
+    }
+
+    .btn-secondary:hover {
+        background-color: rgba(67, 97, 238, 0.1);
+        transform: translateY(-2px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    /* --- Stats Grid --- */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background-color: white;
+        border-radius: 5px;
+        padding: 1.5rem;
+        display: flex;
+        gap: 1.5rem;
+        align-items: center;
+        box-shadow: var(--card-shadow);
+        transition: var(--transition);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+    }
+
+    .stat-card:nth-child(1) .stat-icon {
+        background: linear-gradient(135deg, #4361ee, #4cc9f0);
+    }
+
+    .stat-card:nth-child(2) .stat-icon {
+        background: linear-gradient(135deg, #4caf50, #8bc34a);
+    }
+
+    .stat-card:nth-child(3) .stat-icon {
+        background: linear-gradient(135deg, #ff9800, #ffc107);
+    }
+
+    .stat-card:nth-child(4) .stat-icon {
+        background: linear-gradient(135deg, #9c27b0, #e91e63);
+    }
+
+    .stat-content h3 {
+        font-size: 1rem;
+        color: var(--text-medium);
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-change {
+        font-size: 0.85rem;
+        color: var(--text-medium);
+    }
+
+    /* --- Content Grid --- */
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    @media (min-width: 1200px) {
+        .content-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    .content-section {
+        background-color: white;
+        border-radius: 5px;
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .section-header h2 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .view-all {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: var(--transition);
+    }
+
+    .view-all:hover {
+        text-decoration: underline;
+    }
+
+    /* --- Products Grid --- */
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 1.25rem;
+    }
+
+    .product-card {
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+        overflow: hidden;
+        transition: var(--transition);
+    }
+
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--card-shadow-hover);
+    }
+
+    .product-image {
+        position: relative;
+        height: 220px;
+        overflow: hidden;
+    }
+
+    .product-image img {
+        width: 240px;
+        height: 100%;
+        object-fit: cover;
+        transition: var(--transition);
+    }
+
+    .product-card:hover .product-image img {
+        transform: scale(1.05);
+    }
+
+    .product-status {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: white;
+    }
+
+    .product-status.active {
+        background-color: rgba(76, 175, 80, 0.9); /* Green for active */
+    }
+
+    .product-status.inactive {
+        background-color: rgba(244, 67, 54, 0.9); /* Red for inactive */
+    }
+        
+    .product-info {
+        padding: 1rem;
+    }
+
+    .product-info h3 {
+        font-size: 0.95rem;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
+    .product-price {
+        color: var(--primary-color);
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .product-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8rem;
+        color: var(--text-medium);
+    }
+
+    /* --- Orders Table --- */
+    .orders-table {
+        overflow-x: auto;
+    }
+
+    .orders-table table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .orders-table th, 
+    .orders-table td {
+        padding: 0.75rem 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .orders-table th {
+        font-weight: 600;
+        color: var(--text-medium);
+        font-size: 0.85rem;
+        text-transform: uppercase;
+    }
+
+    .orders-table tr:hover td {
+        background-color: rgba(67, 97, 238, 0.03);
+    }
+
+    .status {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 3px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .status.processing {
+        background-color: rgba(255, 152, 0, 0.1);
+        color: var(--warning-color);
+    }
+
+    .status.shipped {
+        background-color: rgba(67, 97, 238, 0.1);
+        color: var(--primary-color);
+    }
+
+    .status.delivered {
+        background-color: rgba(76, 175, 80, 0.1);
+        color: var(--success-color);
+    }
+
+    .status.pending {
+        background-color: rgba(108, 117, 125, 0.1);
+        color: var(--text-medium);
+    }
+
+    /* --- Chart Section --- */
+    .chart-section {
+        background-color: white;
+        border-radius: 5px;
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 2rem;
+    }
+
+    .time-filters {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .time-filter {
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+        border: 1px solid var(--border-color);
+        background: none;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .time-filter.active {
+        background-color: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+
+    .time-filter:not(.active):hover {
+        background-color: var(--bg-light);
+    }
+
+    .chart-container {
+        margin-top: 1.5rem;
+        height: 300px;
+    }
+
+    .chart-placeholder {
+        height: 100%;
+        background-color: var(--bg-light);
+        border-radius: 5px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-medium);
+    }
+
+    .chart-placeholder i {
+        font-size: 3rem;
+        margin-top: 1rem;
+        color: var(--border-color);
+    }
+
+    /* --- Registration Prompt --- */
+    .registration-prompt {
+        max-width: 800px;
+        margin: 3rem auto;
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: 4px;
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+    }
+
+    .prompt-content {
+        display: flex;
+        align-items: center;
+    }
+
+    .prompt-icon {
+        width: 200px;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 4rem;
+        padding: 2rem;
+    }
+
+    .prompt-text {
+        padding: 2rem;
+        flex: 1;
+    }
+
+    .prompt-text h2 {
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+        color: var(--text-dark);
+    }
+
+    .prompt-text p {
+        margin-bottom: 1.5rem;
+        color: var(--text-medium);
+    }
+
+    .btn-register-store {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem 2rem;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: var(--transition);
+        box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+    }
+
+    .btn-register-store:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(67, 97, 238, 0.4);
+    }
+
+    /* --- Responsive Design --- */
+    @media (max-width: 992px) {
+        .dashboard-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1.5rem;
+        }
+
+        .quick-actions {
+            width: 100%;
+            justify-content: flex-start;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .seller-dashboard {
+            padding: 0 1rem;
+        }
+
+        .prompt-content {
+            flex-direction: column;
+        }
+
+        .prompt-icon {
+            width: 100%;
+            padding: 1.5rem;
+        }
+
+        .products-grid {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        }
+    }
+
+    @media (max-width: 576px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .products-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .btn-action {
+            padding: 0.75rem 1rem;
+            font-size: 0.9rem;
+        }
+    }
+</style>
+{% endblock %}
