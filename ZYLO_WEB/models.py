@@ -264,3 +264,14 @@ class SavedCard(models.Model):
 
     def get_display_expiration(self):
         return f"{str(self.expiration_month).zfill(2)}/{str(self.expiration_year)[-2:]}"
+
+
+
+class cart_Wishlist(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cart_wishlist')
+    quantity = models.IntegerField(default=1)
+    date_added = models.DateTimeField(auto_now_add=True)
+    cart=models.CharField(max_length=1000, default='')  # 'cart' 
+    wishlist=models.CharField(max_length=1000, default='')  # 'cart'
+    def __str__(self):
+        return f"{self.user.username} - {self.product.product_name} (Qty: {self.quantity})"
