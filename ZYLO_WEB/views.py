@@ -5,10 +5,11 @@ from .forms import adminLoginForm,registrationform,ContactInformationForm,UserPr
 from django.contrib import messages
 from django.contrib.auth import authenticate, login,logout
 from django.contrib.auth.decorators import login_required
-from .models import ContactInformation,SavedAddress,SavedCard,UserProfilepictures
+from .models import ContactInformation,SavedAddress,SavedCard,UserProfilepictures,cart_Wishlist
 from ZYLO_SELLER.models import Category, Product, SellerProfile,storelogo,ProductVariant
 from .context_processors import global_context
 from django.db import transaction
+import json
 import logging
 logger = logging.getLogger(__name__)
 
@@ -387,17 +388,6 @@ def delete_saved_card(request, card_id):
         messages.error(request, f'An error occurred while deleting the card: {e}')
     return redirect('profile')
 
-from .context_processors import global_context
-
-@login_required
-def cart(request):
-    if request.user.is_authenticated:
-        user = request.user
-        context= global_context(request)
-        print(f"User {user.username} is authenticated. Context: {context}")
-    return render(request, 'ZYLO_WEB/cart.html', {
-        'user': user,'context': context
-    })
 
 
 
@@ -417,3 +407,202 @@ def product_var(request, product_id):
         'related_products_by_category': related_products_by_category,
         'related_products_by_subcategory': related_products_by_subcategory,
     })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@login_required
+def cart(request):
+    try:
+        # Get the user's cart or create one if it doesn't exist
+        cart, created = cart_Wishlist.objects.get_or_create(
+            user=request.user,
+            defaults={'cart': json.dumps([]), 'wishlist': json.dumps([])}
+        )
+        
+        # Get the list of variant IDs from the cart
+        cart_items = json.loads(cart.cart)
+        
+        # Get all product variants that are in the cart
+        variants = ProductVariant.objects.filter(id__in=cart_items)
+        
+        # Create a dictionary with quantities for each variant
+        variant_quantities = {}
+        for variant_id in cart_items:
+            variant_quantities[str(variant_id)] = cart_items.count(variant_id)
+        
+        # Calculate total price
+        total_price = sum(variant.price * variant_quantities[str(variant.id)] for variant in variants)
+        
+        context = {
+            'cart_items': variants,
+            'variant_quantities': variant_quantities,
+            'total_price': total_price,
+            'cart_count': len(cart_items),
+        }
+        
+    except Exception as e:
+        messages.error(request, f"Error loading your cart: {str(e)}")
+        context = {
+            'cart_items': [],
+            'variant_quantities': {},
+            'total_price': 0,
+            'cart_count': 0,
+        }
+    
+    return render(request, 'ZYLO_WEB/cart.html', context)
+
+@login_required
+def add_to_cart(request, variant_id):
+    variant = get_object_or_404(ProductVariant, id=variant_id)
+    
+    try:
+        # Get or create cart for user
+        cart, created = cart_Wishlist.objects.get_or_create(
+            user=request.user,
+            defaults={'cart': json.dumps([]), 'wishlist': json.dumps([])}
+        )
+        
+        # Load current cart items
+        cart_items = json.loads(cart.cart)
+        
+        # Add the new variant ID
+        cart_items.append(variant_id)
+        
+        # Save back to database
+        cart.cart = json.dumps(cart_items)
+        cart.save()
+        
+        messages.success(request, f'{variant.product.name} added to your cart')
+    
+    except Exception as e:
+        messages.error(request, f'Error adding item to cart: {str(e)}')
+    
+    return redirect('cart')
+
+@login_required
+def remove_from_cart(request, variant_id):
+    try:
+        cart = cart_Wishlist.objects.get(user=request.user)
+        cart_items = json.loads(cart.cart)
+        
+        # Remove all occurrences of this variant (if you want to remove just one, use cart_items.remove(variant_id) once)
+        cart_items = [item for item in cart_items if item != variant_id]
+        
+        cart.cart = json.dumps(cart_items)
+        cart.save()
+        
+        messages.success(request, 'Item removed from your cart')
+    
+    except cart_Wishlist.DoesNotExist:
+        messages.warning(request, 'Your cart is empty')
+    except Exception as e:
+        messages.error(request, f'Error removing item: {str(e)}')
+    
+    return redirect('cart')
+
+@login_required
+def update_quantity(request, variant_id):
+    if request.method == 'POST':
+        try:
+            new_quantity = int(request.POST.get('quantity', 1))
+            cart = cart_Wishlist.objects.get(user=request.user)
+            cart_items = json.loads(cart.cart)
+            
+            # Remove all existing instances
+            cart_items = [item for item in cart_items if item != variant_id]
+            
+            # Add the correct number of items
+            cart_items.extend([variant_id] * new_quantity)
+            
+            cart.cart = json.dumps(cart_items)
+            cart.save()
+            
+            messages.success(request, 'Quantity updated successfully')
+        
+        except ValueError:
+            messages.error(request, 'Invalid quantity')
+        except Exception as e:
+            messages.error(request, f'Error updating quantity: {str(e)}')
+    
+    return redirect('cart')
+
+
+
+
+
+
+
+
+@login_required
+def wishlist_view(request):
+    try:
+        # Get or create user's wishlist
+        wishlist, created = cart_Wishlist.objects.get_or_create(
+            user=request.user,
+            defaults={'wishlist': json.dumps([]), 'cart': json.dumps([])}
+        )
+        
+        # Get wishlist items
+        wishlist_items = json.loads(wishlist.wishlist)
+        variants = ProductVariant.objects.filter(id__in=wishlist_items)
+        
+        context = {
+            'wishlist_items': variants,
+            'wishlist_count': len(wishlist_items),
+        }
+        
+    except Exception as e:
+        messages.error(request, f"Error loading wishlist: {str(e)}")
+        context = {
+            'wishlist_items': [],
+            'wishlist_count': 0,
+        }
+    
+    return render(request, 'ZYLO_WEB/wishlist.html', context)
+
+@login_required
+def add_to_wishlist(request, variant_id):
+    variant = get_object_or_404(ProductVariant, id=variant_id)
+    
+    try:
+        # Get or create wishlist record
+        wishlist, created = cart_Wishlist.objects.get_or_create(
+            user=request.user,
+            defaults={'wishlist': json.dumps([]), 'cart': json.dumps([])}
+        )
+        
+        if wishlist.add_to_wishlist(variant_id):
+            messages.success(request, f'{variant.product.name} added to wishlist')
+        else:
+            messages.info(request, f'{variant.product.name} is already in your wishlist')
+    
+    except Exception as e:
+        messages.error(request, f'Error adding to wishlist: {str(e)}')
+    
+    return redirect(request.META.get('HTTP_REFERER', 'wishlist_view'))
+
+@login_required
+def remove_from_wishlist(request, variant_id):
+    try:
+        wishlist = cart_Wishlist.objects.get(user=request.user)
+        if wishlist.remove_from_wishlist(variant_id):
+            messages.success(request, 'Item removed from wishlist')
+        else:
+            messages.warning(request, 'Item not found in wishlist')
+    except cart_Wishlist.DoesNotExist:
+        messages.warning(request, 'Your wishlist is empty')
+    except Exception as e:
+        messages.error(request, f'Error removing item: {str(e)}')
+    
+    return redirect(request.META.get('HTTP_REFERER', 'wishlist_view'))

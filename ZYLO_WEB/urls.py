@@ -16,6 +16,11 @@ urlpatterns = [
     path('profile/card/add/', views.add_saved_card, name='add_saved_card'), # New URL for adding card
     path('profile/card/edit/<int:card_id>/', views.edit_saved_card, name='edit_saved_card'), # New URL for editing card
     path('profile/card/delete/<int:card_id>/', views.delete_saved_card, name='delete_saved_card'), # New URL for deleting card
+    path('product_var/<int:product_id>/',views.product_var,name='product_var'),
     path('cart/', views.cart, name='cart'), # New URL for cart
-    path('product_var/<int:product_id>/',views.product_var,name='product_var')
+    path('cart/<int:variant_id>/',views.add_to_cart,name='add_to_cart'),
+    path('remove_from_cart/<int:variant_id>',views.remove_from_cart,name='remove_from_cart'),
+    path('wishlist/', views.wishlist_view, name='wishlist_view'),
+    path('wishlist/add/<int:variant_id>/', views.add_to_wishlist, name='add_to_wishlist'),
+    path('wishlist/remove/<int:variant_id>/', views.remove_from_wishlist, name='remove_from_wishlist'),
 ]

@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'ZYLO_WEB',
     'ZYLO_SELLER',
     'widget_tweaks',
-
 ]
 
 MIDDLEWARE = [
