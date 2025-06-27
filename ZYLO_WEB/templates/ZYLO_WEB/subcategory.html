@@ -1,117 +1,147 @@
 {% extends 'base/base.html' %}
 {% load static %}
-
 {% block content %}
-<div class="container py-5">
-    {% if products %}
-    <div class="row">
-        <div class="col-12 mb-4">
-            <h2 class="fw-bold">Our Products</h2>
-            <p class="text-muted">{{ products|length }} items available</p>
-        </div>
-        
+
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8 text-gray-800">{{name}}</h1>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {% for prod in products %}
-        <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6 mb-4">
-            <div class="card product-card h-100 border-0 shadow-sm">
-                <div class="position-relative">
+        <a href="{% url 'product_var' prod.id %}" class="product-link block">
+            <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
+                <!-- Product Image -->
+                <div class="h-64 bg-gray-100 flex items-center justify-center">
                     {% if prod.image %}
-                    <img src="{{ prod.image.url }}" class="card-img-top product-image" alt="{{ prod.name }}">
+                    <img src="{{ prod.image.url }}" alt="{{ prod.name }}" class="max-h-full max-w-full object-contain">
                     {% else %}
-                    <img src="{% static 'images/default-product.jpg' %}" class="card-img-top product-image" alt="Default product image">
-                    {% endif %}
-                    
-                    {% if prod.is_new %}
-                    <span class="badge bg-danger position-absolute top-0 end-0 m-2">New</span>
+                    <span class="text-gray-400">No image available</span>
                     {% endif %}
                 </div>
                 
-                <div class="card-body d-flex flex-column">
-                    <h5 class="card-title">{{ prod.name }}</h5>
-                    <p class="text-muted small mb-2">Sold by: {{ prod.seller.store_name }}</p>
+                <!-- Product Info -->
+                <div class="p-4 flex-grow">
+                    <h3 class="font-semibold text-lg mb-2 text-gray-800">{{ prod.name }}</h3>
+                    <p class="text-sm text-gray-600 mb-4">Sold by: {{ prod.seller.store_name }}</p>
                     
-                    {% if prod.variants.all %}
-                    <div class="mb-3 flex-grow-1">
-                        <div class="d-flex flex-wrap gap-2 mb-2">
-                            {% for variant in prod.variants.all %}
-                            {% if variant.size %}
-                            <span class="badge bg-light text-dark border">{{ variant.size }}</span>
-                            {% endif %}
+                    <!-- Variants grouped by size -->
+                    <div>
+                        <h4 class="text-sm font-medium mb-2 text-gray-700">Available Options:</h4>
+                        <div class="space-y-3">
+                            {% regroup prod.variants.all by size as size_list %}
+                            {% for size in size_list %}
+                            <div class="border border-gray-200 rounded p-2 relative">
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="font-medium">Size: {{ size.grouper }}</span>
+                                    {% if size.list|length > 2 %}
+                                    <button onclick="event.stopPropagation(); openModal(event, '{{ prod.name }}', '{{ size.grouper }}', {{ forloop.parentloop.counter0 }}, {{ size.list|length }})" 
+                                            class="text-xs text-blue-500 hover:text-blue-700 z-10">
+                                        View all ({{ size.list|length }})
+                                    </button>
+                                    {% endif %}
+                                </div>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="text-xs text-gray-500 mr-1">Colors:</span>
+                                    {% for variant in size.list|slice:":2" %}
+                                    <div class="tooltip" data-tip="{{ variant.color_hex }}">
+                                        <div class="w-5 h-5 rounded-full border border-gray-200" 
+                                             style="background-color: {{ variant.color_hex }}">
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                    {% if size.list|length > 2 %}
+                                    <span class="text-xs text-gray-400">+{{ size.list|length|add:"-2" }} more</span>
+                                    {% endif %}
+                                </div>
+                            </div>
                             {% endfor %}
                         </div>
-                        
-                        <div class="d-flex flex-wrap gap-2">
-                            {% for variant in prod.variants.all %}
-                            {% if variant.color_hex %}
-                            <span class="color-swatch" style="background-color: {{ variant.color_hex }};" 
-                                  title="{{ variant.color_name|default:variant.color_hex }}"></span>
-                            {% endif %}
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% endif %}
-                    
-                    <div class="d-flex justify-content-between align-items-center mt-auto">
-                        <div>
-                            <span class="fw-bold h5">${{ prod.price }}</span>
-                            {% if prod.discounted_price %}
-                            <small class="text-muted text-decoration-line-through ms-2">${{ prod.discounted_price }}</small>
-                            {% endif %}
-                        </div>
-                        <a href="{% url 'product_var' prod.id %}" class="btn btn-sm btn-outline-primary">View</a>
                     </div>
                 </div>
             </div>
-        </div>
+        </a>
         {% endfor %}
     </div>
-    {% else %}
-    <div class="text-center py-5 my-5">
-        <div class="mb-4">
-            <i class="fas fa-box-open fa-4x text-muted"></i>
-        </div>
-        <h3 class="h4 mb-3">No products available</h3>
-        <p class="text-muted mb-4">We're currently updating our inventory. Please check back later.</p>
-        <a href="{% url 'home' %}" class="btn btn-primary">Return to Home</a>
-    </div>
-    {% endif %}
 </div>
 
+<!-- Modal -->
+<div id="variantModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-lg max-w-md w-full max-h-[80vh] overflow-y-auto">
+        <div class="p-4 border-b flex justify-between items-center">
+            <h3 id="modalTitle" class="font-bold text-lg"></h3>
+            <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                &times;
+            </button>
+        </div>
+        <div id="modalContent" class="p-4">
+            <!-- Content will be inserted here -->
+        </div>
+    </div>
+</div>
+
+<script>
+function openModal(event, productName, sizeName, productIndex, variantCount) {
+    event.preventDefault();
+    document.getElementById('modalTitle').textContent = `${productName} - Size: ${sizeName} (${variantCount} options)`;
+    document.getElementById('variantModal').classList.remove('hidden');
+    
+    // In a real implementation, you would fetch the actual variants for this product/size
+    document.getElementById('modalContent').innerHTML = `
+        <p class="text-gray-600 mb-4">All color options for this size:</p>
+        <div class="flex flex-wrap gap-3">
+            {% comment %} This is just placeholder - you would need to pass the actual variants {% endcomment %}
+            {% for i in "123"|make_list %}
+            <div class="flex flex-col items-center">
+                <div class="w-8 h-8 rounded-full border border-gray-200 mb-1" 
+                     style="background-color: #{{ forloop.counter }}{{ forloop.counter }}f{{ forloop.counter }}f"></div>
+                <span class="text-xs text-gray-600">#{{ forloop.counter }}{{ forloop.counter }}f{{ forloop.counter }}f</span>
+            </div>
+            {% endfor %}
+        </div>
+    `;
+}
+
+function closeModal() {
+    document.getElementById('variantModal').classList.add('hidden');
+}
+
+// Close modal when clicking outside
+document.getElementById('variantModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeModal();
+    }
+});
+</script>
+
 <style>
-    .product-card {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        border-radius: 0.5rem;
-        overflow: hidden;
-    }
-    
-    .product-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    }
-    
-    .product-image {
-        height: 200px;
-        width: 100%;
-        object-fit: cover;
-        background-color: #f8f9fa;
-    }
-    
-    .color-swatch {
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        display: inline-block;
-        border: 1px solid #dee2e6;
-        cursor: pointer;
-    }
-    
-    .card-body {
-        padding: 1.25rem;
-    }
-    
-    @media (max-width: 768px) {
-        .product-image {
-            height: 180px;
-        }
-    }
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip:hover::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  margin-bottom: 5px;
+  z-index: 10;
+}
+
+.product-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.product-link:hover {
+    text-decoration: none;
+}
 </style>
+
 {% endblock %}

@@ -3,233 +3,390 @@
 
 {% block content %}
 <div class="product-detail-container">
-    <!-- Main Product Section -->
-    <section class="product-main">
-        <div class="product-info">
-            <div class="product-header">
-                <div class="breadcrumb">
-                    <a href="{% url 'home' %}">Home</a> / 
-                    <a href="{% url 'category' product.category.id %}">{{ product.category }}</a>
-                    <span>{{ product.name }}</span>
-                </div>
-                <h1 class="product-title">{{ product.name }}</h1>
-                <div class="product-meta">
-                    <span class="category-badge">{{ product.subcategory }}</span>
-                    {% if product.average_rating %}
-                    <div class="rating">
-                        <div class="stars">
-                            {% for i in "12345" %}
-                                {% if forloop.counter <= product.average_rating|floatformat:0 %}
-                                    ★
-                                {% else %}
-                                    ☆
-                                {% endif %}
-                            {% endfor %}
-                        </div>
-                        <span class="rating-value">{{ product.average_rating|floatformat:1 }}</span>
-                        <span class="rating-count">({{ product.review_count }} reviews)</span>
+    <!-- Product Header with Breadcrumb -->
+    <nav class="breadcrumb-nav">
+        <ol class="breadcrumb">
+            <li><a href="{% url 'home' %}">Home</a></li>
+            <li><a href="{% url 'category' product.category.id %}">{{ product.category }}</a></li>
+            <li aria-current="page">{{ product.name|truncatechars:30 }}</li>
+        </ol>
+    </nav>
+
+    <!-- Main Product Grid -->
+    <div class="product-grid">
+        <!-- Product Gallery with Slider -->
+        <div class="product-gallery">
+            <div class="slider-container">
+                <div class="slider">
+                    {% for variant in variants %}
+                    <div class="slide">
+                        <img src="{{ variant.variant_image.url }}" alt="{{ variant.color }} {{ variant.size }}" loading="lazy">
                     </div>
-                    {% endif %}
+                    {% endfor %}
                 </div>
+                <button class="slider-btn prev-btn" aria-label="Previous image">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="slider-btn next-btn" aria-label="Next image">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+                <div class="slider-dots"></div>
+            </div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="product-info">
+            <div class="store-info">
+                <img src="{{ product.seller.storelogo.image.url }}" alt="{{ product.seller.store_name }}" class="store-logo" loading="lazy">
+                <span class="store-name">{{ product.seller.store_name }}</span>
             </div>
             
-            <div class="divider"></div>
+            <h1 class="product-title">{{ product.name }}</h1>
             
-            <h2 class="section-title">Available Options</h2>
-                
-            <div class="variant-results">
-                {% for variant in variants %}
-                <div class="variant-card {% if variant.stock == 0 %}out-of-stock{% endif %}" 
-                     data-variant-id="{{ variant.id }}"
-                     data-color="{{ variant.color }}"
-                     data-size="{{ variant.size }}">
-                    <div class="variant-content">
+            <div class="product-meta">
+                <span class="category-tag">{{ product.subcategory }}</span>
+                <span class="product-id">ID: {{ product.id }}</span>
+            </div>
+
+            <!-- Variant Selection and Display -->
+            <div class="variant-section">
+                <h3 class="section-title">Available Options</h3>
+                <div class="variant-list">
+                    {% for variant in variants %}
+                    <div class="variant-card {% if variant.stock == 0 %}out-of-stock{% endif %}" 
+                         data-variant-id="{{ variant.id }}"
+                         data-slide-index="{{ forloop.counter0 }}">
                         <div class="variant-image">
-                            <img src="{{ variant.variant_image.url }}" alt="{{ variant.name }}" loading="lazy">
+                            <img src="{{ variant.variant_image.url }}" alt="{{ variant.color }} {{ variant.size }}" loading="lazy">
                         </div>
                         <div class="variant-details">
-                            <div class="variant-price">₹{{ variant.price }}</div>
-                            <h3 class="variant-name">{{ variant.size }}</h3>
-                            <h3 class="variant-name">
-                                <span class="color-swatch" style="background-color:{{ variant.color_hex|default:'#cccccc' }}"></span>
-                                {{ variant.color }}
-                            </h3>
-                            <div class="variant-availability">
-                                <span class="availability-dot {% if variant.stock > 0 %}in-stock{% else %}out-of-stock{% endif %}"></span>
-                                {% if variant.stock > 0 %}
-                                    In Stock ({{ variant.stock }})
+                            <div class="variant-attributes">
+                                <span class="variant-color">
+                                    <span class="color-swatch" style="background-color:{{ variant.color_hex|default:'#cccccc' }}"></span>
+                                    {{ variant.color }}
+                                </span>
+                                <span class="variant-size">{{ variant.size }}</span>
+                            </div>
+                            <div class="variant-pricing">
+                                {% if variant.discounted_price %}
+                                    <span class="variant-price">₹{{ variant.discounted_price }}</span>
+                                    <span class="original-price">₹{{ variant.price }}</span>
+                                    <span class="discount-badge">{{ variant.discount_percent }}% OFF</span>
                                 {% else %}
-                                    Out of Stock
+                                    <span class="variant-price">₹{{ variant.price }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="variant-stock {% if variant.stock > 0 %}in-stock{% else %}out-of-stock{% endif %}">
+                                {% if variant.stock > 0 %}
+                                    <i class="fas fa-check-circle"></i> In Stock ({{ variant.stock }})
+                                {% else %}
+                                    <i class="fas fa-times-circle"></i> Out of Stock
                                 {% endif %}
                             </div>
                         </div>
-                    </div>
-                    <div class="variant-actions">
-                        <a href="{% url 'add_to_cart' variant.id %}">
-                            <button class="btn btn-primary add-to-cart-btn" 
-                                    {% if variant.stock == 0 %}disabled{% endif %}>
-                                    {% if variant.stock > 0 %}
-                                        Add to Cart 
-                                    {% else %}
-                                        Not Available
-                                    {% endif %}
+                        <div class="variant-actions">
+                            {% if variant.stock > 0 %}
+                                <a href="{% url 'add_to_cart' variant.id %}" class="btn btn-primary btn-add-to-cart">
+                                    <i class="fas fa-shopping-cart"></i> Add to Cart
+                                </a>
+                            {% else %}
+                                <button class="btn btn-primary btn-add-to-cart disabled" disabled>
+                                    <i class="fas fa-shopping-cart"></i> Out of Stock
+                                </button>
+                            {% endif %}
+                            <a href="{% url 'add_to_wishlist' variant.id %}" class="btn btn-outline btn-wishlist">
+                                <i class="far fa-heart"></i> Wishlist
+                            </a>
+                            <button class="specs-btn" data-variant-id="{{ variant.id }}">
+                                <i class="fas fa-info-circle"></i> Specs
                             </button>
-                        </a>
-                        <button class="btn btn-outline wishlist-btn" title="Add to wishlist">
-                            <i class="far fa-heart"></i>
-                        </button>
-                        <button class="btn btn-specifications" title="Specifications">
-                            <i class="fas fa-list-ul"></i>
-                        </button>
+                        </div>
                     </div>
+                    {% empty %}
+                    <div class="no-variants">
+                        <i class="fas fa-box-open"></i>
+                        <p>No variants available for this product</p>
+                    </div>
+                    {% endfor %}
                 </div>
-                {% empty %}
-                <div class="no-variants">
-                    <i class="fas fa-box-open"></i>
-                    <p>No variants available for the selected options</p>
-                </div>
-                {% endfor %}
             </div>
         </div>
-    </section>
+    </div>
+</div>
 
-    <!-- Description Section -->
-    <section class="product-description-section">
-        <h2 class="section-title">Product Description</h2>
-        <div class="description-content">
-            {{ product.description|default:"No description available" }}
+<!-- Variant Specs Modal -->
+<div class="modal" id="specsModal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h3 class="modal-title">Variant Specifications</h3>
+        <div class="modal-body">
+            <table class="specs-table">
+                <tbody id="variantSpecsContent">
+                    <!-- Content will be loaded via AJAX -->
+                </tbody>
+            </table>
         </div>
-    </section>
+    </div>
 </div>
 
 <style>
 :root {
-    --primary-color: #2563eb;
-    --primary-hover: #1d4ed8;
-    --secondary-color: #7c3aed;
-    --accent-color: #10b981;
-    --danger-color: #ef4444;
+    --primary: #2563eb;
+    --primary-dark: #1e40af;
+    --secondary: #7c3aed;
+    --accent: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
     --text-dark: #1f2937;
     --text-medium: #4b5563;
     --text-light: #9ca3af;
     --bg-light: #f9fafb;
-    --border-color: #e5e7eb;
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    --radius-sm: 0.25rem;
-    --radius-md: 0.5rem;
-    --radius-lg: 0.75rem;
-    --transition: all 0.2s ease-in-out;
+    --border-light: #e5e7eb;
+    --border-medium: #d1d5db;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --transition: all 0.2s ease;
 }
 
 /* Base Styles */
 .product-detail-container {
     max-width: 1200px;
-    margin: 2rem auto;
-    padding: 0 1.5rem;
+    margin: 0 auto;
+    padding: 0 20px 40px;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     color: var(--text-dark);
-    line-height: 1.6;
 }
 
-/* Product Layout */
-.product-main {
-    margin-bottom: 3rem;
-}
-
-/* Product Info */
-.product-info {
-    padding: 0 0.5rem;
-}
-
-.product-header {
-    margin-bottom: 1.5rem;
+/* Breadcrumb */
+.breadcrumb-nav {
+    padding: 16px 0;
 }
 
 .breadcrumb {
-    font-size: 0.875rem;
-    color: var(--text-medium);
-    margin-bottom: 1rem;
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 14px;
+}
+
+.breadcrumb li {
+    display: flex;
+    align-items: center;
+}
+
+.breadcrumb li:not(:last-child)::after {
+    content: '/';
+    margin: 0 8px;
+    color: var(--text-light);
 }
 
 .breadcrumb a {
     color: var(--text-medium);
+    text-decoration: none;
     transition: var(--transition);
 }
 
 .breadcrumb a:hover {
-    color: var(--primary-color);
+    color: var(--primary);
 }
 
-.breadcrumb span {
+.breadcrumb li[aria-current="page"] {
     color: var(--text-dark);
     font-weight: 500;
 }
 
+/* Product Grid Layout */
+.product-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-bottom: 60px;
+}
+
+/* Enhanced Product Gallery */
+.product-gallery {
+    position: relative;
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    height: fit-content;
+}
+
+.slider-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    aspect-ratio: 1/1;
+}
+
+.slider {
+    display: flex;
+    transition: transform 0.5s ease;
+    height: 100%;
+}
+
+.slide {
+    min-width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    padding: 20px;
+}
+
+.slide img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    object-position: center;
+}
+
+.slider-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dark);
+    font-size: 16px;
+    box-shadow: var(--shadow-md);
+    transition: var(--transition);
+    z-index: 10;
+    opacity: 0;
+}
+
+.slider-container:hover .slider-btn {
+    opacity: 1;
+}
+
+.slider-btn:hover {
+    background: white;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.prev-btn {
+    left: 20px;
+}
+
+.next-btn {
+    right: 20px;
+}
+
+.slider-dots {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    z-index: 10;
+}
+
+.slider-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.slider-dot.active {
+    background: white;
+    transform: scale(1.2);
+}
+
+/* Product Info */
+.product-info {
+    padding: 20px;
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.store-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.store-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 5px;
+    object-fit: cover;
+    border: 1px solid var(--border-light);
+}
+
+.store-name {
+    font-size: 16px;
+    color: var(--text-medium);
+    font-weight: 500;
+}
+
 .product-title {
-    font-size: 2rem;
+    font-size: 24px;
     font-weight: 700;
-    line-height: 1.2;
-    margin-bottom: 0.75rem;
+    line-height: 1.3;
+    margin: 0 0 16px 0;
     color: var(--text-dark);
 }
 
 .product-meta {
     display: flex;
     align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
     flex-wrap: wrap;
-    gap: 1rem;
-    margin-top: 0.5rem;
 }
 
-.category-badge {
-    background: var(--bg-light);
-    color: var(--primary-color);
-    padding: 0.375rem 0.875rem;
-    border-radius: 1rem;
-    font-size: 0.8125rem;
+.category-tag {
+    background: rgba(37, 99, 235, 0.1);
+    color: var(--primary);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
     font-weight: 600;
-    border: 1px solid var(--border-color);
 }
 
-.rating {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    font-size: 0.875rem;
+.product-id {
+    font-size: 12px;
+    color: var(--text-light);
 }
 
-.stars {
-    color: #f59e0b;
-    letter-spacing: 0.1em;
-}
-
-.rating-value {
-    font-weight: 600;
-    color: var(--text-dark);
-}
-
-.rating-count {
-    color: var(--text-medium);
-}
-
-.divider {
-    height: 1px;
-    background: var(--border-color);
-    margin: 1.75rem 0;
-    border: none;
+/* Variant Section */
+.variant-section {
+    margin: 30px 0;
 }
 
 .section-title {
+    font-size: 18px;
+    margin-bottom: 16px;
     position: relative;
-    padding-bottom: 0.75rem;
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 1.25rem;
+    padding-bottom: 8px;
+    color: var(--text-dark);
 }
 
 .section-title::after {
@@ -237,246 +394,557 @@
     position: absolute;
     bottom: 0;
     left: 0;
-    width: 3rem;
-    height: 3px;
-    background: var(--primary-color);
-    border-radius: 3px;
+    width: 40px;
+    height: 2px;
+    background: var(--primary);
 }
 
-/* Variant Cards */
-.variant-results {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 1rem;
-    margin-top: 1rem;
+.variant-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 .variant-card {
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    background: white;
-    overflow: hidden;
-    transition: var(--transition);
     display: flex;
-    flex-direction: column;
-}
-
-.variant-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
-    border-color: var(--primary-color);
-}
-
-.variant-card.out-of-stock {
-    opacity: 0.7;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    gap: 16px;
+    transition: var(--transition);
     position: relative;
 }
 
-.variant-card.out-of-stock::after {
-    content: 'Out of Stock';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    background: rgba(239, 68, 68, 0.8);
-    color: white;
-    text-align: center;
-    padding: 0.25rem;
-    font-size: 0.75rem;
-    font-weight: 600;
+.variant-card:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-sm);
 }
 
-.variant-content {
-    padding: 1rem;
+.variant-card.out-of-stock {
+    opacity: 0.8;
+    background-color: rgba(239, 68, 68, 0.03);
 }
 
 .variant-image {
-    width: 100%;
-    height: 120px;
+    width: 80px;
+    height: 80px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    flex-shrink: 0;
     background: var(--bg-light);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 0.75rem;
-    border-radius: var(--radius-sm);
-    overflow: hidden;
 }
 
 .variant-image img {
-    max-width: 100%;
-    max-height: 100%;
+    width: 100%;
+    height: 100%;
     object-fit: contain;
 }
 
 .variant-details {
-    margin-bottom: 0.5rem;
+    flex-grow: 1;
+    min-width: 0;
 }
 
-.variant-price {
-    font-weight: 700;
-    color: var(--primary-color);
-    font-size: 1.125rem;
-    margin-bottom: 0.5rem;
+.variant-attributes {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 8px;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
-.variant-name {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text-dark);
-    margin-bottom: 0.25rem;
+.variant-color {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-dark);
 }
 
 .color-swatch {
-    display: inline-block;
-    width: 1rem;
-    height: 1rem;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
-    border: 1px solid var(--border-color);
-    flex-shrink: 0;
+    border: 1px solid var(--border-medium);
 }
 
-.variant-availability {
-    font-size: 0.75rem;
+.variant-size {
+    background: var(--bg-light);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.variant-pricing {
     display: flex;
     align-items: center;
-    gap: 0.375rem;
-    color: var(--text-medium);
-    margin-top: 0.5rem;
+    gap: 8px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
 }
 
-.availability-dot {
-    display: inline-block;
-    width: 0.6rem;
-    height: 0.6rem;
-    border-radius: 50%;
+.variant-price {
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--primary);
 }
 
-.availability-dot.in-stock { background-color: var(--accent-color); }
-.availability-dot.out-of-stock { background-color: var(--danger-color); }
+.original-price {
+    font-size: 14px;
+    color: var(--text-light);
+    text-decoration: line-through;
+}
+
+.discount-badge {
+    background: var(--accent);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.variant-stock {
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.variant-stock.in-stock {
+    color: var(--accent);
+}
+
+.variant-stock.out-of-stock {
+    color: var(--danger);
+}
 
 .variant-actions {
     display: flex;
-    gap: 0.5rem;
-    padding: 0 1rem 1rem;
-    margin-top: auto;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 120px;
 }
 
 .btn {
-    padding: 0.5rem 0.75rem;
+    padding: 8px 12px;
     border-radius: var(--radius-sm);
     font-weight: 500;
-    font-size: 0.875rem;
+    font-size: 14px;
     cursor: pointer;
     transition: var(--transition);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.375rem;
+    gap: 6px;
     border: 1px solid transparent;
+    text-decoration: none;
 }
 
 .btn-primary {
-    background: var(--primary-color);
+    background: var(--primary);
     color: white;
-    flex-grow: 1;
 }
 
 .btn-primary:hover:not(:disabled) {
-    background: var(--primary-hover);
+    background: var(--primary-dark);
     transform: translateY(-1px);
 }
 
 .btn-primary:disabled {
     background: var(--text-light);
     cursor: not-allowed;
+    opacity: 0.7;
 }
 
-.btn-outline, .btn-specifications {
+.btn-outline {
     background: white;
-    border-color: var(--border-color);
+    border-color: var(--border-light);
     color: var(--text-medium);
-    width: 2.5rem;
-    padding: 0.5rem;
 }
 
-.btn-outline:hover, .btn-specifications:hover {
-    border-color: var(--primary-color);
-    color: var(--primary-color);
+.btn-outline:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.specs-btn {
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    background: var(--bg-light);
+    border: 1px solid var(--border-light);
+    color: var(--text-medium);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: var(--transition);
+}
+
+.specs-btn:hover {
+    background: var(--border-light);
+    color: var(--primary);
+}
+
+.specs-btn i {
+    font-size: 14px;
 }
 
 .no-variants {
-    grid-column: 1 / -1;
     text-align: center;
-    padding: 2rem;
-    color: var(--text-medium);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
-    border: 1px dashed var(--border-color);
+    padding: 20px;
+    color: var(--text-light);
+    border: 1px dashed var(--border-light);
     border-radius: var(--radius-md);
-    background: var(--bg-light);
 }
 
 .no-variants i {
-    font-size: 2rem;
-    color: var(--border-color);
+    font-size: 24px;
+    margin-bottom: 8px;
+    display: block;
 }
 
 .no-variants p {
     margin: 0;
-    font-size: 0.9375rem;
 }
 
-/* Description Section */
-.product-description-section {
-    margin-top: 3rem;
-    padding: 2rem;
-    background: var(--bg-light);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border-color);
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    transition: opacity 0.3s ease;
 }
 
-.description-content {
+.modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 25px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.close-modal:hover {
+    color: var(--danger);
+}
+
+.modal-title {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: var(--text-dark);
+    font-size: 20px;
+    padding-right: 20px;
+}
+
+.modal-body {
+    line-height: 1.6;
+}
+
+/* Specs Table */
+.specs-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.specs-table tr {
+    border-bottom: 1px solid var(--border-light);
+}
+
+.specs-table tr:last-child {
+    border-bottom: none;
+}
+
+.specs-table td {
+    padding: 12px 0;
+    vertical-align: top;
+}
+
+.specs-table td:first-child {
+    font-weight: 500;
+    color: var(--text-dark);
+    width: 40%;
+    padding-right: 20px;
+}
+
+.specs-table td:last-child {
     color: var(--text-medium);
-    line-height: 1.7;
 }
 
-/* Responsive Adjustments */
+/* Responsive Design */
+@media (max-width: 992px) {
+    .product-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    
+    .slider-container {
+        aspect-ratio: 1/1;
+    }
+}
+
 @media (max-width: 768px) {
     .product-title {
-        font-size: 1.75rem;
-    }
-    
-    .variant-results {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    }
-    
-    .product-description-section {
-        padding: 1.5rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .product-detail-container {
-        padding: 0 1rem;
-    }
-    
-    .variant-results {
-        grid-template-columns: 1fr;
+        font-size: 22px;
     }
     
     .variant-card {
-        max-width: 100%;
+        flex-direction: column;
     }
     
-    .product-description-section {
-        padding: 1rem;
-        margin-top: 2rem;
+    .variant-actions {
+        flex-direction: row;
+        min-width: auto;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 10% auto;
+    }
+}
+
+@media (max-width: 576px) {
+    .slider-container {
+        aspect-ratio: 1/1;
+    }
+    
+    .slider-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 14px;
+    }
+    
+    .variant-image {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .specs-table td {
+        display: block;
+        width: 100%;
+        padding: 8px 0;
+    }
+    
+    .specs-table td:first-child {
+        padding-right: 0;
+        font-weight: 600;
     }
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Enhanced Slider functionality
+    const slider = document.querySelector('.slider');
+    const slides = document.querySelectorAll('.slide');
+    const prevBtn = document.querySelector('.prev-btn');
+    const nextBtn = document.querySelector('.next-btn');
+    const dotsContainer = document.querySelector('.slider-dots');
+    let currentIndex = 0;
+    let slideInterval;
+    let touchStartX = 0;
+    let touchEndX = 0;
+    
+    // Create dots
+    slides.forEach((_, index) => {
+        const dot = document.createElement('button');
+        dot.classList.add('slider-dot');
+        if (index === 0) dot.classList.add('active');
+        dot.addEventListener('click', () => {
+            goToSlide(index);
+        });
+        dotsContainer.appendChild(dot);
+    });
+    
+    const dots = document.querySelectorAll('.slider-dot');
+    
+    function goToSlide(index) {
+        if (index < 0) index = slides.length - 1;
+        if (index >= slides.length) index = 0;
+        
+        currentIndex = index;
+        slider.style.transform = `translateX(-${currentIndex * 100}%)`;
+        
+        // Update active dot
+        dots.forEach((dot, i) => {
+            dot.classList.toggle('active', i === currentIndex);
+        });
+        
+        // Reset autoplay timer
+        resetAutoplay();
+    }
+    
+    function resetAutoplay() {
+        clearInterval(slideInterval);
+        slideInterval = setInterval(() => {
+            goToSlide(currentIndex + 1);
+        }, 5000);
+    }
+    
+    prevBtn.addEventListener('click', () => {
+        goToSlide(currentIndex - 1);
+    });
+    
+    nextBtn.addEventListener('click', () => {
+        goToSlide(currentIndex + 1);
+    });
+    
+    // Touch support for mobile
+    slider.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, {passive: true});
+    
+    slider.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    }, {passive: true});
+    
+    function handleSwipe() {
+        if (touchEndX < touchStartX - 50) {
+            goToSlide(currentIndex + 1); // Swipe left
+        } else if (touchEndX > touchStartX + 50) {
+            goToSlide(currentIndex - 1); // Swipe right
+        }
+    }
+    
+    // Click on variant card to show corresponding slide
+    const variantCards = document.querySelectorAll('.variant-card');
+    variantCards.forEach(card => {
+        card.addEventListener('click', function(e) {
+            // Don't navigate if clicking on buttons
+            if (e.target.closest('.btn') || e.target.closest('.specs-btn')) return;
+            
+            const slideIndex = parseInt(this.getAttribute('data-slide-index'));
+            goToSlide(slideIndex);
+            
+            // Scroll to gallery if mobile
+            if (window.innerWidth < 992) {
+                document.querySelector('.product-gallery').scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+    
+    // Modal functionality for variant specs
+    const modal = document.getElementById('specsModal');
+    const closeBtn = document.querySelector('.close-modal');
+    const specsBtns = document.querySelectorAll('.specs-btn');
+    
+    specsBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const variantId = this.getAttribute('data-variant-id');
+            loadVariantSpecs(variantId);
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        });
+    });
+    
+    closeBtn.addEventListener('click', function() {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    });
+    
+    window.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    });
+    
+    function loadVariantSpecs(variantId) {
+        // This would typically be an AJAX call to your backend
+        // For demo purposes, we'll use mock data
+        const variantCard = document.querySelector(`.variant-card[data-variant-id="${variantId}"]`);
+        const color = variantCard.querySelector('.variant-color').textContent.trim();
+        const size = variantCard.querySelector('.variant-size').textContent.trim();
+        const stock = variantCard.querySelector('.variant-stock').textContent.trim();
+        
+        const mockSpecs = `
+            <tr>
+                <td>Color</td>
+                <td>${color}</td>
+            </tr>
+            <tr>
+                <td>Size</td>
+                <td>${size}</td>
+            </tr>
+            <tr>
+                <td>Availability</td>
+                <td>${stock}</td>
+            </tr>
+            <tr>
+                <td>Material</td>
+                <td>Premium Cotton Blend</td>
+            </tr>
+            <tr>
+                <td>Weight</td>
+                <td>Lightweight (approx. 200g)</td>
+            </tr>
+            <tr>
+                <td>Care Instructions</td>
+                <td>Machine wash cold, tumble dry low</td>
+            </tr>
+            <tr>
+                <td>SKU</td>
+                <td>${variantId}</td>
+            </tr>
+        `;
+        
+        document.getElementById('variantSpecsContent').innerHTML = mockSpecs;
+    }
+    
+    // Start autoplay
+    resetAutoplay();
+    
+    // Pause on hover
+    slider.addEventListener('mouseenter', () => {
+        clearInterval(slideInterval);
+    });
+    
+    slider.addEventListener('mouseleave', resetAutoplay);
+});
+</script>
 {% endblock %}

@@ -86,7 +86,7 @@
                 </div>
                 <div class="products-grid">
                     {% for product in user_products|slice:":6" %}
-                    <a href="{% url 'variantdet' product.id %}" class="product-card">
+                    <a href="#" class="product-card">
                         <div class="product-image">
                             <img src="{{ product.image.url }}" alt="{{ product.name }}">
                             <span class="product-status {% if product.on_sale %}active{% else %}inactive{% endif %}">

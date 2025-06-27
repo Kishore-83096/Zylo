@@ -15,7 +15,7 @@
     <section class="mb-5">
         <div class="grid-container">
             {% for sc in subcat %}
-            <a href="{% url 'subcategory' sc.id %}" class="grid-item subcategory-item">
+            <a href="{% url 'subcategory' sc.id sc.slug %}" class="grid-item subcategory-item">
                 <div class="grid-img-container">
                     {% if sc.image %}
                     <img src="{{ sc.image.url }}" alt="{{ sc.name }}" loading="lazy" class="img-fluid">

@@ -624,7 +624,7 @@ def category(request, category_id):
 
 
 
-def subcategory(request, subcategory_id):
+def subcategory(request, subcategory_id,name):
     products = Product.objects.filter(subcategory=subcategory_id)\
         .select_related('seller').prefetch_related('variants')# Single optimized query to get all required data
-    return render(request, 'ZYLO_WEB/subcategory.html',{'products':products})
+    return render(request, 'ZYLO_WEB/subcategory.html',{'products':products,'name':name})

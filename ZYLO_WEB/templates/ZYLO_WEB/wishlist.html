@@ -46,13 +46,19 @@
                 {% endif %}
             </div>
             <div class="item-actions">
-                <a href="{% url 'add_to_cart' variant.id %}" class="add-to-cart-btn">
-                    <i class="fas fa-shopping-cart"></i> Add to Cart
-                </a>
+                {% if variant.stock > 0 %}
+                    <a href="{% url 'add_to_cart' variant.id %}" class="add-to-cart-btn">
+                        <i class="fas fa-shopping-cart"></i> Add to Cart
+                    </a>
+                {% else %}
+                    <button class="add-to-cart-btn out-of-stock-btn" disabled>
+                        <i class="fas fa-shopping-cart"></i> Out of Stock
+                    </button>
+                {% endif %}
                 <a href="{% url 'remove_from_wishlist' variant.id %}" class="remove-btn">
                     <i class="far fa-trash-alt"></i> Remove
                 </a>
-                <a href="{{ variant.product.get_absolute_url }}" class="view-details-btn">
+                <a href="{% url 'product_var' variant.product_id %}" class="view-details-btn">
                     <i class="far fa-eye"></i> View Details
                 </a>
             </div>
@@ -215,7 +221,7 @@
         gap: 10px;
     }
     
-    .add-to-cart-btn, .remove-btn, .view-details-btn {
+    .add-to-cart-btn, .out-of-stock-btn, .remove-btn, .view-details-btn {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -226,15 +232,25 @@
         text-decoration: none;
         font-weight: 500;
         transition: all 0.2s;
+        cursor: pointer;
     }
     
     .add-to-cart-btn {
         background-color: #2a5cb8;
         color: white;
+        border: none;
     }
     
     .add-to-cart-btn:hover {
         background-color: #1e4a9b;
+    }
+    
+    .out-of-stock-btn {
+        background-color: #6c757d;
+        color: white;
+        cursor: not-allowed;
+        opacity: 0.7;
+        border: none;
     }
     
     .remove-btn {
@@ -320,37 +336,6 @@
                 if (!confirm('Are you sure you want to remove this item from your wishlist?')) {
                     e.preventDefault();
                 }
-            });
-        });
-        
-        // Optional: Add AJAX for add to cart buttons
-        document.querySelectorAll('.add-to-cart-btn').forEach(button => {
-            button.addEventListener('click', function(e) {
-                // Uncomment to use AJAX instead of direct link
-                /*
-                e.preventDefault();
-                const url = this.getAttribute('href');
-                
-                fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': '{{ csrf_token }}',
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Item added to cart successfully!');
-                    } else {
-                        alert('Error: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred while adding to cart');
-                });
-                */
             });
         });
     });
