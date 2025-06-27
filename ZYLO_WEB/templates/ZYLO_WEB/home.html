@@ -23,46 +23,58 @@
 
         
     <!-- Products Section -->
-    <section id="products" class="section-padding">
-        <div class="section-header">
-            <h2>Featured Products</h2>
-            <a href="#" class="view-all">View All</a>
-        </div>
-            
-        <div class="product-grid">
-            {% for product in products|slice:":8" %}
-            <div class="product-card">
-                <a href="{% url 'product_var' product.id %}" class="product-link">
-                    <div class="product-image">
-                        <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
-                        {% if product.total_stock == 0 %}
-                            <span class="badge">Waitlist</span>
+<section id="products" class="section-padding">
+    <div class="section-header">
+        <h2>Featured Products</h2>
+        <a href="#" class="view-all">View All</a>
+    </div>
+        
+    <div class="product-grid">
+    {% for product in products|slice:":8" %}
+        {% if product.variants.all|length > 0 %}  <!-- Only show products that have variants -->
+        <div class="product-card">
+            <a href="{% url 'product_var' product.id %}" class="product-link">
+                <div class="product-image">
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
+                </div>
+                <div class="product-details">
+                    <h3>{{ product.name }}</h3>
+                    <p class="store-name">{{ product.seller.store_name }}</p>
+                    
+                    <!-- Price Display -->
+                    <div class="product-price">
+                        {% with product.variants.all|dictsort:"price"|first as cheapest_variant %}
+                            {% if cheapest_variant.discounted_price %}
+                                <span class="current-price">₹{{ cheapest_variant.discounted_price }}</span>
+                                <span class="original-price">₹{{ cheapest_variant.price }}</span>
+                                <span class="discount-badge">{{ cheapest_variant.discount_percent }}% OFF</span>
+                            {% else %}
+                                <span class="current-price">₹{{ cheapest_variant.price }}</span>
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                    
+                    <!-- Variant Display -->
+                    <div class="product-variants">
+                        {% for variant in product.variants.all|slice:":3" %}
+                        <div class="variant">
+                            <span class="variant-size">{{ variant.size }}</span>
+                            <span class="color-dot" style="background-color: {{ variant.color_hex|default:'#ddd' }}"></span>
+                        </div>
+                        {% endfor %}
+                        {% if product.variants.count > 3 %}
+                            <div class="variant-more">+{{ product.variants.count|add:"-3" }} more</div>
                         {% endif %}
                     </div>
-                    <div class="product-details">
-                        <h3>{{ product.name }}</h3>
-                        <p class="store-name">{{ product.seller.store_name }}</p>
-                    
-                        <!-- Variant Display -->
-                        <div class="product-variants">
-                            {% for variant in product.variants.all|slice:":3" %}
-                            <div class="variant">
-                                <span class="variant-size">{{ variant.size }}</span>
-                                <span class="color-dot" style="background-color: {{ variant.color_hex|default:'#ddd' }}"></span>
-                            </div>
-                            {% endfor %}
-                            {% if product.variants.count > 3 %}
-                                <div class="variant-more">+{{ product.variants.count|add:"-3" }} more</div>
-                            {% endif %}
-                        </div>
-                    </div>
-                </a>
-            </div>
-            {% empty %}
-                <p class="no-items">New arrivals coming soon</p>
-            {% endfor %}
-         </div>
-    </section>
+                </div>
+            </a>
+        </div>
+        {% endif %}
+    {% empty %}
+        <p class="no-items">New arrivals coming soon</p>
+    {% endfor %}
+    </div>
+</section>
 
     <!-- Categories Section -->
     <section class="categories-section section-padding">
@@ -382,6 +394,37 @@
     line-height: 1;
 }
 
+
+    .product-price {
+        margin: 8px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    
+    .current-price {
+        font-weight: 600;
+        font-size: 16px;
+        color: #2a5cb8;
+    }
+    
+    .original-price {
+        text-decoration: line-through;
+        color: #999;
+        font-size: 14px;
+    }
+    
+    .discount-badge {
+        background-color: #28a745;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    
 .variant-size {
     font-weight: 500;
     color: var(--text-dark);

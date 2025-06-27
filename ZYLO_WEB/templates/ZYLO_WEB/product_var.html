@@ -2,110 +2,148 @@
 {% load static %}
 
 {% block content %}
-<div class="product-detail-container">
-    <!-- Product Header with Breadcrumb -->
-    <nav class="breadcrumb-nav">
-        <ol class="breadcrumb">
-            <li><a href="{% url 'home' %}">Home</a></li>
-            <li><a href="{% url 'category' product.category.id %}">{{ product.category }}</a></li>
-            <li aria-current="page">{{ product.name|truncatechars:30 }}</li>
+<div class="product-detail-container max-w-6xl mx-auto px-4 py-6">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-nav text-sm mb-6">
+        <ol class="flex items-center space-x-2 text-gray-600">
+            <li><a href="{% url 'home' %}" class="hover:text-blue-600">Home</a></li>
+            <li>/</li>
+            <li><a href="{% url 'category' product.category.id %}" class="hover:text-blue-600">{{ product.category }}</a></li> 
+            <li>/</li>
+            <li class="text-gray-800 font-medium">{{ product.name|truncatechars:30 }}</li>
         </ol>
     </nav>
 
-    <!-- Main Product Grid -->
-    <div class="product-grid">
-        <!-- Product Gallery with Slider -->
-        <div class="product-gallery">
-            <div class="slider-container">
-                <div class="slider">
+    <div class="product-grid grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Product Gallery - Updated with hover controls -->
+        <div class="product-gallery bg-white rounded-xl shadow-sm overflow-hidden group">
+            <div class="slider-container relative aspect-square">
+                <div class="slider flex h-full transition-transform duration-300">
                     {% for variant in variants %}
-                    <div class="slide">
-                        <img src="{{ variant.variant_image.url }}" alt="{{ variant.color }} {{ variant.size }}" loading="lazy">
+                    <div class="slide min-w-full h-full flex items-center justify-center p-4">
+                        <img src="{{ variant.variant_image.url }}" alt="{{ variant.color }} {{ variant.size }}" 
+                             class="max-h-full max-w-full object-contain" loading="lazy">
                     </div>
                     {% endfor %}
                 </div>
-                <button class="slider-btn prev-btn" aria-label="Previous image">
-                    <i class="fas fa-chevron-left"></i>
+                
+                <!-- Navigation Arrows - Visible on hover -->
+                <button class="slider-btn prev-btn absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 w-10 h-10 rounded-full shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+                    <i class="fas fa-chevron-left text-gray-700"></i>
                 </button>
-                <button class="slider-btn next-btn" aria-label="Next image">
-                    <i class="fas fa-chevron-right"></i>
+                <button class="slider-btn next-btn absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 w-10 h-10 rounded-full shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+                    <i class="fas fa-chevron-right text-gray-700"></i>
                 </button>
-                <div class="slider-dots"></div>
+                
+                <!-- Dots Indicator - Improved visibility -->
+                <div class="slider-dots absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
+                    {% for variant in variants %}
+                    <button class="slider-dot w-2 h-2 rounded-full transition-all duration-200 {% if forloop.first %}bg-blue-600 w-3{% else %}bg-gray-300 hover:bg-gray-400{% endif %}"></button>
+                    {% endfor %}
+                </div>
             </div>
         </div>
 
-        <!-- Product Info -->
-        <div class="product-info">
-            <div class="store-info">
-                <img src="{{ product.seller.storelogo.image.url }}" alt="{{ product.seller.store_name }}" class="store-logo" loading="lazy">
-                <span class="store-name">{{ product.seller.store_name }}</span>
+        <!-- Product Info (unchanged) -->
+        <div class="product-info bg-white rounded-xl shadow-sm p-6">
+            <!-- Store Info -->
+            <div class="store-info flex items-center gap-3 pb-4 mb-4 border-b border-gray-100">
+                <img src="{{ product.seller.storelogo.image.url }}" alt="{{ product.seller.store_name }}" 
+                     class="store-logo w-10 h-10 rounded-md object-cover border border-gray-200" loading="lazy">
+                <span class="store-name font-medium text-gray-700">{{ product.seller.store_name }}</span>
             </div>
             
-            <h1 class="product-title">{{ product.name }}</h1>
+            <!-- Product Title -->
+            <h1 class="product-title text-2xl font-bold text-gray-900 mb-3">{{ product.name }}</h1>
             
-            <div class="product-meta">
-                <span class="category-tag">{{ product.subcategory }}</span>
-                <span class="product-id">ID: {{ product.id }}</span>
+            <!-- Product Meta -->
+            <div class="product-meta flex flex-wrap gap-2 mb-6">
+                <span class="category-tag bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-medium">
+                    {{ product.subcategory }}
+                </span>
+                <span class="product-id text-xs text-gray-500">ID: {{ product.id }}</span>
             </div>
 
-            <!-- Variant Selection and Display -->
+            <!-- Variant Selection -->
             <div class="variant-section">
-                <h3 class="section-title">Available Options</h3>
-                <div class="variant-list">
+                <h3 class="section-title text-lg font-semibold text-gray-900 mb-4 pb-2 relative">
+                    Available Options
+                    <span class="absolute bottom-0 left-0 w-10 h-0.5 bg-blue-600"></span>
+                </h3>
+                
+                <div class="variant-list space-y-4">
                     {% for variant in variants %}
-                    <div class="variant-card {% if variant.stock == 0 %}out-of-stock{% endif %}" 
-                         data-variant-id="{{ variant.id }}"
-                         data-slide-index="{{ forloop.counter0 }}">
-                        <div class="variant-image">
-                            <img src="{{ variant.variant_image.url }}" alt="{{ variant.color }} {{ variant.size }}" loading="lazy">
+                    <div class="variant-card border border-gray-200 rounded-lg p-4 transition-all hover:border-blue-600 {% if variant.stock == 0 %}opacity-70 bg-gray-50{% endif %} {% if forloop.first %}border-2 border-blue-600 bg-blue-50{% endif %}" 
+                         data-variant-id="{{ variant.id }}" data-slide-index="{{ forloop.counter0 }}">
+                        <div class="flex gap-4">
+                            <!-- Variant Image -->
+                            <div class="variant-image w-20 h-20 flex-shrink-0 rounded-md overflow-hidden bg-gray-100">
+                                <img src="{{ variant.variant_image.url }}" alt="{{ variant.color }} {{ variant.size }}" 
+                                     class="w-full h-full object-contain" loading="lazy">
+                            </div>
+                            
+                            <!-- Variant Details -->
+                            <div class="variant-details flex-grow">
+                                <div class="variant-attributes flex flex-wrap items-center gap-3 mb-2">
+                                    <span class="variant-color flex items-center gap-1.5 text-sm font-medium">
+                                        <span class="color-swatch w-4 h-4 rounded-full border border-gray-300" 
+                                              style="background-color:{{ variant.color_hex|default:'#cccccc' }}"></span>
+                                        {{ variant.color }}
+                                    </span>
+                                    <span class="variant-size bg-gray-100 text-gray-800 px-2 py-0.5 rounded text-xs font-medium">
+                                        {{ variant.size }}
+                                    </span>
+                                </div>
+                                
+                                <!-- Pricing -->
+                                <div class="variant-pricing flex items-center flex-wrap gap-2 mb-2">
+                                    {% if variant.discounted_price %}
+                                        <span class="variant-price text-lg font-bold text-blue-600">₹{{ variant.discounted_price }}</span>
+                                        <span class="original-price text-sm text-gray-500 line-through">₹{{ variant.price }}</span>
+                                        <span class="discount-badge bg-green-100 text-green-800 text-xs px-1.5 py-0.5 rounded">
+                                            {{ variant.discount_percent }}% OFF
+                                        </span>
+                                    {% else %}
+                                        <span class="variant-price text-lg font-bold text-blue-600">₹{{ variant.price }}</span>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Stock Status -->
+                                <div class="variant-stock text-sm flex items-center gap-1 {% if variant.stock > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                                    <i class="fas {% if variant.stock > 0 %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i>
+                                    {% if variant.stock > 0 %}In Stock ({{ variant.stock }}){% else %}Out of Stock{% endif %}
+                                </div>
+                            </div>
                         </div>
-                        <div class="variant-details">
-                            <div class="variant-attributes">
-                                <span class="variant-color">
-                                    <span class="color-swatch" style="background-color:{{ variant.color_hex|default:'#cccccc' }}"></span>
-                                    {{ variant.color }}
-                                </span>
-                                <span class="variant-size">{{ variant.size }}</span>
-                            </div>
-                            <div class="variant-pricing">
-                                {% if variant.discounted_price %}
-                                    <span class="variant-price">₹{{ variant.discounted_price }}</span>
-                                    <span class="original-price">₹{{ variant.price }}</span>
-                                    <span class="discount-badge">{{ variant.discount_percent }}% OFF</span>
-                                {% else %}
-                                    <span class="variant-price">₹{{ variant.price }}</span>
-                                {% endif %}
-                            </div>
-                            <div class="variant-stock {% if variant.stock > 0 %}in-stock{% else %}out-of-stock{% endif %}">
-                                {% if variant.stock > 0 %}
-                                    <i class="fas fa-check-circle"></i> In Stock ({{ variant.stock }})
-                                {% else %}
-                                    <i class="fas fa-times-circle"></i> Out of Stock
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="variant-actions">
+                        
+                        <!-- Actions -->
+                        <div class="variant-actions mt-4 flex flex-col sm:flex-row gap-2">
                             {% if variant.stock > 0 %}
-                                <a href="{% url 'add_to_cart' variant.id %}" class="btn btn-primary btn-add-to-cart">
+                                <a href="{% url 'add_to_cart' variant.id %}" 
+                                   class="btn-primary bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center justify-center gap-2 transition-all flex-grow text-center font-medium shadow-sm hover:shadow-md hover:-translate-y-0.5">
                                     <i class="fas fa-shopping-cart"></i> Add to Cart
                                 </a>
                             {% else %}
-                                <button class="btn btn-primary btn-add-to-cart disabled" disabled>
+                                <button class="btn-primary bg-gray-400 text-white px-4 py-2 rounded-md flex items-center justify-center gap-2 cursor-not-allowed flex-grow" disabled>
                                     <i class="fas fa-shopping-cart"></i> Out of Stock
                                 </button>
                             {% endif %}
-                            <a href="{% url 'add_to_wishlist' variant.id %}" class="btn btn-outline btn-wishlist">
+                            
+                            <a href="{% url 'add_to_wishlist' variant.id %}" 
+                               class="btn-outline border border-gray-300 hover:border-blue-600 text-gray-700 hover:text-blue-600 px-4 py-2 rounded-md flex items-center justify-center gap-2 transition-colors">
                                 <i class="far fa-heart"></i> Wishlist
                             </a>
-                            <button class="specs-btn" data-variant-id="{{ variant.id }}">
+                            
+                            <button class="specs-btn bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-md flex items-center justify-center gap-1.5 text-sm transition-colors" 
+                                    data-variant-id="{{ variant.id }}">
                                 <i class="fas fa-info-circle"></i> Specs
                             </button>
                         </div>
                     </div>
                     {% empty %}
-                    <div class="no-variants">
-                        <i class="fas fa-box-open"></i>
-                        <p>No variants available for this product</p>
+                    <div class="no-variants text-center py-6 border border-dashed border-gray-300 rounded-lg">
+                        <i class="fas fa-box-open text-3xl text-gray-400 mb-2"></i>
+                        <p class="text-gray-500">No variants available for this product</p>
                     </div>
                     {% endfor %}
                 </div>
@@ -115,13 +153,15 @@
 </div>
 
 <!-- Variant Specs Modal -->
-<div class="modal" id="specsModal">
-    <div class="modal-content">
-        <span class="close-modal">&times;</span>
-        <h3 class="modal-title">Variant Specifications</h3>
-        <div class="modal-body">
-            <table class="specs-table">
-                <tbody id="variantSpecsContent">
+<div id="specsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4">
+    <div class="modal-content bg-white rounded-xl shadow-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div class="modal-header flex justify-between items-center p-4 border-b">
+            <h3 class="modal-title text-lg font-bold text-gray-900">Variant Specifications</h3>
+            <button class="close-modal text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+        </div>
+        <div class="modal-body p-4">
+            <table class="specs-table w-full">
+                <tbody id="variantSpecsContent" class="divide-y divide-gray-200">
                     <!-- Content will be loaded via AJAX -->
                 </tbody>
             </table>
@@ -129,676 +169,18 @@
     </div>
 </div>
 
-<style>
-:root {
-    --primary: #2563eb;
-    --primary-dark: #1e40af;
-    --secondary: #7c3aed;
-    --accent: #10b981;
-    --danger: #ef4444;
-    --warning: #f59e0b;
-    --text-dark: #1f2937;
-    --text-medium: #4b5563;
-    --text-light: #9ca3af;
-    --bg-light: #f9fafb;
-    --border-light: #e5e7eb;
-    --border-medium: #d1d5db;
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
-    --radius-sm: 4px;
-    --radius-md: 8px;
-    --radius-lg: 12px;
-    --transition: all 0.2s ease;
-}
-
-/* Base Styles */
-.product-detail-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px 40px;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    color: var(--text-dark);
-}
-
-/* Breadcrumb */
-.breadcrumb-nav {
-    padding: 16px 0;
-}
-
-.breadcrumb {
-    display: flex;
-    flex-wrap: wrap;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    font-size: 14px;
-}
-
-.breadcrumb li {
-    display: flex;
-    align-items: center;
-}
-
-.breadcrumb li:not(:last-child)::after {
-    content: '/';
-    margin: 0 8px;
-    color: var(--text-light);
-}
-
-.breadcrumb a {
-    color: var(--text-medium);
-    text-decoration: none;
-    transition: var(--transition);
-}
-
-.breadcrumb a:hover {
-    color: var(--primary);
-}
-
-.breadcrumb li[aria-current="page"] {
-    color: var(--text-dark);
-    font-weight: 500;
-}
-
-/* Product Grid Layout */
-.product-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
-    margin-bottom: 60px;
-}
-
-/* Enhanced Product Gallery */
-.product-gallery {
-    position: relative;
-    background: white;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    height: fit-content;
-}
-
-.slider-container {
-    position: relative;
-    width: 100%;
-    overflow: hidden;
-    border-radius: var(--radius-lg);
-    aspect-ratio: 1/1;
-}
-
-.slider {
-    display: flex;
-    transition: transform 0.5s ease;
-    height: 100%;
-}
-
-.slide {
-    min-width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #ffffff;
-    padding: 20px;
-}
-
-.slide img {
-    max-width: 100%;
-    max-height: 100%;
-    width: auto;
-    height: auto;
-    object-fit: contain;
-    object-position: center;
-}
-
-.slider-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 40px;
-    height: 40px;
-    background: rgba(255, 255, 255, 0.9);
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-dark);
-    font-size: 16px;
-    box-shadow: var(--shadow-md);
-    transition: var(--transition);
-    z-index: 10;
-    opacity: 0;
-}
-
-.slider-container:hover .slider-btn {
-    opacity: 1;
-}
-
-.slider-btn:hover {
-    background: white;
-    transform: translateY(-50%) scale(1.1);
-}
-
-.prev-btn {
-    left: 20px;
-}
-
-.next-btn {
-    right: 20px;
-}
-
-.slider-dots {
-    position: absolute;
-    bottom: 20px;
-    left: 0;
-    right: 0;
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    z-index: 10;
-}
-
-.slider-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.5);
-    border: none;
-    cursor: pointer;
-    transition: var(--transition);
-}
-
-.slider-dot.active {
-    background: white;
-    transform: scale(1.2);
-}
-
-/* Product Info */
-.product-info {
-    padding: 20px;
-    background: white;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-}
-
-.store-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 12px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--border-light);
-}
-
-.store-logo {
-    width: 40px;
-    height: 40px;
-    border-radius: 5px;
-    object-fit: cover;
-    border: 1px solid var(--border-light);
-}
-
-.store-name {
-    font-size: 16px;
-    color: var(--text-medium);
-    font-weight: 500;
-}
-
-.product-title {
-    font-size: 24px;
-    font-weight: 700;
-    line-height: 1.3;
-    margin: 0 0 16px 0;
-    color: var(--text-dark);
-}
-
-.product-meta {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-}
-
-.category-tag {
-    background: rgba(37, 99, 235, 0.1);
-    color: var(--primary);
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.product-id {
-    font-size: 12px;
-    color: var(--text-light);
-}
-
-/* Variant Section */
-.variant-section {
-    margin: 30px 0;
-}
-
-.section-title {
-    font-size: 18px;
-    margin-bottom: 16px;
-    position: relative;
-    padding-bottom: 8px;
-    color: var(--text-dark);
-}
-
-.section-title::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 40px;
-    height: 2px;
-    background: var(--primary);
-}
-
-.variant-list {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.variant-card {
-    display: flex;
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius-md);
-    padding: 16px;
-    gap: 16px;
-    transition: var(--transition);
-    position: relative;
-}
-
-.variant-card:hover {
-    border-color: var(--primary);
-    box-shadow: var(--shadow-sm);
-}
-
-.variant-card.out-of-stock {
-    opacity: 0.8;
-    background-color: rgba(239, 68, 68, 0.03);
-}
-
-.variant-image {
-    width: 80px;
-    height: 80px;
-    border-radius: var(--radius-sm);
-    overflow: hidden;
-    flex-shrink: 0;
-    background: var(--bg-light);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.variant-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-
-.variant-details {
-    flex-grow: 1;
-    min-width: 0;
-}
-
-.variant-attributes {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 8px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.variant-color {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-dark);
-}
-
-.color-swatch {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    border: 1px solid var(--border-medium);
-}
-
-.variant-size {
-    background: var(--bg-light);
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-dark);
-}
-
-.variant-pricing {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 6px;
-    flex-wrap: wrap;
-}
-
-.variant-price {
-    font-weight: 600;
-    font-size: 16px;
-    color: var(--primary);
-}
-
-.original-price {
-    font-size: 14px;
-    color: var(--text-light);
-    text-decoration: line-through;
-}
-
-.discount-badge {
-    background: var(--accent);
-    color: white;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.variant-stock {
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.variant-stock.in-stock {
-    color: var(--accent);
-}
-
-.variant-stock.out-of-stock {
-    color: var(--danger);
-}
-
-.variant-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    min-width: 120px;
-}
-
-.btn {
-    padding: 8px 12px;
-    border-radius: var(--radius-sm);
-    font-weight: 500;
-    font-size: 14px;
-    cursor: pointer;
-    transition: var(--transition);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    border: 1px solid transparent;
-    text-decoration: none;
-}
-
-.btn-primary {
-    background: var(--primary);
-    color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-    background: var(--primary-dark);
-    transform: translateY(-1px);
-}
-
-.btn-primary:disabled {
-    background: var(--text-light);
-    cursor: not-allowed;
-    opacity: 0.7;
-}
-
-.btn-outline {
-    background: white;
-    border-color: var(--border-light);
-    color: var(--text-medium);
-}
-
-.btn-outline:hover {
-    border-color: var(--primary);
-    color: var(--primary);
-}
-
-.specs-btn {
-    padding: 6px 10px;
-    border-radius: var(--radius-sm);
-    font-size: 13px;
-    background: var(--bg-light);
-    border: 1px solid var(--border-light);
-    color: var(--text-medium);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    transition: var(--transition);
-}
-
-.specs-btn:hover {
-    background: var(--border-light);
-    color: var(--primary);
-}
-
-.specs-btn i {
-    font-size: 14px;
-}
-
-.no-variants {
-    text-align: center;
-    padding: 20px;
-    color: var(--text-light);
-    border: 1px dashed var(--border-light);
-    border-radius: var(--radius-md);
-}
-
-.no-variants i {
-    font-size: 24px;
-    margin-bottom: 8px;
-    display: block;
-}
-
-.no-variants p {
-    margin: 0;
-}
-
-/* Modal */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
-    transition: opacity 0.3s ease;
-}
-
-.modal-content {
-    background-color: white;
-    margin: 5% auto;
-    padding: 25px;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
-    width: 90%;
-    max-width: 600px;
-    max-height: 80vh;
-    overflow-y: auto;
-    position: relative;
-    animation: modalFadeIn 0.3s ease;
-}
-
-@keyframes modalFadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.close-modal {
-    position: absolute;
-    top: 15px;
-    right: 20px;
-    font-size: 24px;
-    font-weight: bold;
-    color: var(--text-light);
-    cursor: pointer;
-    transition: var(--transition);
-}
-
-.close-modal:hover {
-    color: var(--danger);
-}
-
-.modal-title {
-    margin-top: 0;
-    margin-bottom: 20px;
-    color: var(--text-dark);
-    font-size: 20px;
-    padding-right: 20px;
-}
-
-.modal-body {
-    line-height: 1.6;
-}
-
-/* Specs Table */
-.specs-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-}
-
-.specs-table tr {
-    border-bottom: 1px solid var(--border-light);
-}
-
-.specs-table tr:last-child {
-    border-bottom: none;
-}
-
-.specs-table td {
-    padding: 12px 0;
-    vertical-align: top;
-}
-
-.specs-table td:first-child {
-    font-weight: 500;
-    color: var(--text-dark);
-    width: 40%;
-    padding-right: 20px;
-}
-
-.specs-table td:last-child {
-    color: var(--text-medium);
-}
-
-/* Responsive Design */
-@media (max-width: 992px) {
-    .product-grid {
-        grid-template-columns: 1fr;
-        gap: 30px;
-    }
-    
-    .slider-container {
-        aspect-ratio: 1/1;
-    }
-}
-
-@media (max-width: 768px) {
-    .product-title {
-        font-size: 22px;
-    }
-    
-    .variant-card {
-        flex-direction: column;
-    }
-    
-    .variant-actions {
-        flex-direction: row;
-        min-width: auto;
-    }
-    
-    .modal-content {
-        width: 95%;
-        margin: 10% auto;
-    }
-}
-
-@media (max-width: 576px) {
-    .slider-container {
-        aspect-ratio: 1/1;
-    }
-    
-    .slider-btn {
-        width: 30px;
-        height: 30px;
-        font-size: 14px;
-    }
-    
-    .variant-image {
-        width: 60px;
-        height: 60px;
-    }
-    
-    .specs-table td {
-        display: block;
-        width: 100%;
-        padding: 8px 0;
-    }
-    
-    .specs-table td:first-child {
-        padding-right: 0;
-        font-weight: 600;
-    }
-}
-</style>
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Enhanced Slider functionality
+    // Slider functionality with updated dot visibility
     const slider = document.querySelector('.slider');
     const slides = document.querySelectorAll('.slide');
     const prevBtn = document.querySelector('.prev-btn');
     const nextBtn = document.querySelector('.next-btn');
-    const dotsContainer = document.querySelector('.slider-dots');
+    const dots = document.querySelectorAll('.slider-dot');
+    const variantCards = document.querySelectorAll('.variant-card');
     let currentIndex = 0;
     let slideInterval;
-    let touchStartX = 0;
-    let touchEndX = 0;
-    
-    // Create dots
-    slides.forEach((_, index) => {
-        const dot = document.createElement('button');
-        dot.classList.add('slider-dot');
-        if (index === 0) dot.classList.add('active');
-        dot.addEventListener('click', () => {
-            goToSlide(index);
-        });
-        dotsContainer.appendChild(dot);
-    });
-    
-    const dots = document.querySelectorAll('.slider-dot');
-    
+
     function goToSlide(index) {
         if (index < 0) index = slides.length - 1;
         if (index >= slides.length) index = 0;
@@ -808,10 +190,28 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Update active dot
         dots.forEach((dot, i) => {
-            dot.classList.toggle('active', i === currentIndex);
+            if (i === currentIndex) {
+                dot.classList.remove('bg-gray-300', 'hover:bg-gray-400');
+                dot.classList.add('bg-blue-600');
+                dot.style.width = '12px';
+            } else {
+                dot.classList.remove('bg-blue-600');
+                dot.classList.add('bg-gray-300', 'hover:bg-gray-400');
+                dot.style.width = '8px';
+            }
         });
         
-        // Reset autoplay timer
+        // Update active variant card
+        variantCards.forEach((card, i) => {
+            if (i === currentIndex) {
+                card.classList.add('border-2', 'border-blue-600', 'bg-blue-50');
+                card.classList.remove('border');
+            } else {
+                card.classList.remove('border-2', 'border-blue-600', 'bg-blue-50');
+                card.classList.add('border');
+            }
+        });
+        
         resetAutoplay();
     }
     
@@ -822,129 +222,160 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 5000);
     }
     
-    prevBtn.addEventListener('click', () => {
-        goToSlide(currentIndex - 1);
+    // Navigation
+    prevBtn.addEventListener('click', () => goToSlide(currentIndex - 1));
+    nextBtn.addEventListener('click', () => goToSlide(currentIndex + 1));
+    
+    // Dots navigation
+    dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => goToSlide(index));
     });
-    
-    nextBtn.addEventListener('click', () => {
-        goToSlide(currentIndex + 1);
-    });
-    
-    // Touch support for mobile
-    slider.addEventListener('touchstart', (e) => {
-        touchStartX = e.changedTouches[0].screenX;
-    }, {passive: true});
-    
-    slider.addEventListener('touchend', (e) => {
-        touchEndX = e.changedTouches[0].screenX;
-        handleSwipe();
-    }, {passive: true});
-    
-    function handleSwipe() {
-        if (touchEndX < touchStartX - 50) {
-            goToSlide(currentIndex + 1); // Swipe left
-        } else if (touchEndX > touchStartX + 50) {
-            goToSlide(currentIndex - 1); // Swipe right
-        }
-    }
     
     // Click on variant card to show corresponding slide
-    const variantCards = document.querySelectorAll('.variant-card');
     variantCards.forEach(card => {
         card.addEventListener('click', function(e) {
-            // Don't navigate if clicking on buttons
-            if (e.target.closest('.btn') || e.target.closest('.specs-btn')) return;
-            
+            if (e.target.closest('.btn, .specs-btn')) return;
             const slideIndex = parseInt(this.getAttribute('data-slide-index'));
             goToSlide(slideIndex);
-            
-            // Scroll to gallery if mobile
-            if (window.innerWidth < 992) {
-                document.querySelector('.product-gallery').scrollIntoView({
-                    behavior: 'smooth'
-                });
-            }
         });
     });
     
-    // Modal functionality for variant specs
+    // Modal functionality
     const modal = document.getElementById('specsModal');
     const closeBtn = document.querySelector('.close-modal');
-    const specsBtns = document.querySelectorAll('.specs-btn');
     
-    specsBtns.forEach(btn => {
+    document.querySelectorAll('.specs-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
             const variantId = this.getAttribute('data-variant-id');
             loadVariantSpecs(variantId);
-            modal.style.display = 'block';
+            modal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
         });
     });
     
-    closeBtn.addEventListener('click', function() {
-        modal.style.display = 'none';
-        document.body.style.overflow = 'auto';
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
     });
     
-    window.addEventListener('click', function(event) {
-        if (event.target === modal) {
-            modal.style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
-    });
+    function closeModal() {
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
     
     function loadVariantSpecs(variantId) {
-        // This would typically be an AJAX call to your backend
-        // For demo purposes, we'll use mock data
         const variantCard = document.querySelector(`.variant-card[data-variant-id="${variantId}"]`);
         const color = variantCard.querySelector('.variant-color').textContent.trim();
         const size = variantCard.querySelector('.variant-size').textContent.trim();
         const stock = variantCard.querySelector('.variant-stock').textContent.trim();
         
-        const mockSpecs = `
-            <tr>
-                <td>Color</td>
-                <td>${color}</td>
+        document.getElementById('variantSpecsContent').innerHTML = `
+            <tr class="hover:bg-gray-50">
+                <td class="py-3 px-4 font-medium text-gray-700">Color</td>
+                <td class="py-3 px-4 text-gray-600">${color}</td>
             </tr>
-            <tr>
-                <td>Size</td>
-                <td>${size}</td>
+            <tr class="hover:bg-gray-50">
+                <td class="py-3 px-4 font-medium text-gray-700">Size</td>
+                <td class="py-3 px-4 text-gray-600">${size}</td>
             </tr>
-            <tr>
-                <td>Availability</td>
-                <td>${stock}</td>
+            <tr class="hover:bg-gray-50">
+                <td class="py-3 px-4 font-medium text-gray-700">Availability</td>
+                <td class="py-3 px-4 text-gray-600">${stock}</td>
             </tr>
-            <tr>
-                <td>Material</td>
-                <td>Premium Cotton Blend</td>
+            <tr class="hover:bg-gray-50">
+                <td class="py-3 px-4 font-medium text-gray-700">Material</td>
+                <td class="py-3 px-4 text-gray-600">Premium Cotton Blend</td>
             </tr>
-            <tr>
-                <td>Weight</td>
-                <td>Lightweight (approx. 200g)</td>
+            <tr class="hover:bg-gray-50">
+                <td class="py-3 px-4 font-medium text-gray-700">Weight</td>
+                <td class="py-3 px-4 text-gray-600">Lightweight (approx. 200g)</td>
             </tr>
-            <tr>
-                <td>Care Instructions</td>
-                <td>Machine wash cold, tumble dry low</td>
+            <tr class="hover:bg-gray-50">
+                <td class="py-3 px-4 font-medium text-gray-700">Care Instructions</td>
+                <td class="py-3 px-4 text-gray-600">Machine wash cold, tumble dry low</td>
             </tr>
-            <tr>
-                <td>SKU</td>
-                <td>${variantId}</td>
+            <tr class="hover:bg-gray-50">
+                <td class="py-3 px-4 font-medium text-gray-700">SKU</td>
+                <td class="py-3 px-4 text-gray-600">${variantId}</td>
             </tr>
         `;
-        
-        document.getElementById('variantSpecsContent').innerHTML = mockSpecs;
     }
     
     // Start autoplay
     resetAutoplay();
     
     // Pause on hover
-    slider.addEventListener('mouseenter', () => {
-        clearInterval(slideInterval);
-    });
-    
+    slider.addEventListener('mouseenter', () => clearInterval(slideInterval));
     slider.addEventListener('mouseleave', resetAutoplay);
 });
 </script>
+
+<style>
+/* Enhanced slider controls */
+.slider-container:hover .slider-btn {
+    opacity: 1 !important;
+}
+
+.slider-btn {
+    transition: opacity 0.3s ease, transform 0.2s ease;
+}
+
+.slider-btn:hover {
+    transform: scale(1.1);
+    background-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Dot navigation improvements */
+.slider-dot {
+    transition: all 0.3s ease;
+    width: 8px;
+    height: 8px;
+}
+
+.slider-dot.bg-blue-600 {
+    width: 12px;
+    height: 12px;
+}
+
+.slider-dot:not(.bg-blue-600):hover {
+    background-color: #9CA3AF !important;
+}
+
+/* Enhanced blue color scheme */
+.btn-primary {
+    background-color: #2563eb; /* blue-600 */
+    transition: all 0.2s ease;
+}
+.btn-primary:hover {
+    background-color: #1d4ed8; /* blue-700 */
+}
+
+/* Active variant card styling */
+.variant-card.border-2.border-blue-600 {
+    box-shadow: 0 0 0 1px #2563eb;
+    background-color: #dbeafe; /* blue-50 */
+}
+
+/* Make price stand out */
+.variant-price {
+    color: #2563eb; /* blue-600 */
+}
+
+/* Section title underline */
+.section-title span {
+    background-color: #2563eb; /* blue-600 */
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .variant-actions {
+        flex-direction: column;
+    }
+    .variant-actions a, 
+    .variant-actions button {
+        width: 100%;
+    }
+}
+</style>
 {% endblock %}
