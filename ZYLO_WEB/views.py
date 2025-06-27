@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login,logout
 from django.contrib.auth.decorators import login_required
 from .models import ContactInformation,SavedAddress,SavedCard,UserProfilepictures,cart_Wishlist
-from ZYLO_SELLER.models import Category, Product, SellerProfile,storelogo,ProductVariant
+from ZYLO_SELLER.models import Category, Product, SellerProfile,storelogo,ProductVariant,SubCategory
 from .context_processors import global_context
 from django.db import transaction
 import json
@@ -604,5 +604,27 @@ def remove_from_wishlist(request, variant_id):
         messages.warning(request, 'Your wishlist is empty')
     except Exception as e:
         messages.error(request, f'Error removing item: {str(e)}')
-    
     return redirect(request.META.get('HTTP_REFERER', 'wishlist_view'))
+
+
+
+
+
+def category(request, category_id):
+    category = get_object_or_404(Category, id=category_id)
+    subcat = SubCategory.objects.filter(category=category_id)
+    products = Product.objects.filter(category=category_id)\
+        .select_related('seller').prefetch_related('variants')# Single optimized query to get all required data
+
+    return render(request, 'ZYLO_WEB/category.html', {
+        'category': category,
+        'subcat': subcat,
+        'products': products,
+    })
+
+
+
+def subcategory(request, subcategory_id):
+    products = Product.objects.filter(subcategory=subcategory_id)\
+        .select_related('seller').prefetch_related('variants')# Single optimized query to get all required data
+    return render(request, 'ZYLO_WEB/subcategory.html',{'products':products})

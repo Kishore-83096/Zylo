@@ -1,0 +1,334 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+
+    <!-- Category Header -->
+    <div class="text-center mb-5">
+        <h1 class="display-6 fw-bold mb-3">{{ category.name|title }}</h1>
+       
+    </div>
+
+    <!-- Subcategories Grid -->
+    {% if subcat %}
+    <section class="mb-5">
+        <div class="grid-container">
+            {% for sc in subcat %}
+            <a href="{% url 'subcategory' sc.id %}" class="grid-item subcategory-item">
+                <div class="grid-img-container">
+                    {% if sc.image %}
+                    <img src="{{ sc.image.url }}" alt="{{ sc.name }}" loading="lazy" class="img-fluid">
+                    {% else %}
+                    <img src="{% static 'images/default-subcategory.jpg' %}" alt="not available" loading="lazy" class="img-fluid">
+                    {% endif %}
+                </div>
+                <div class="grid-content">
+                    <h3>{{ sc.name }}</h3>
+                    <span class="grid-link">View collection →</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Products Grid -->
+    <section>
+        <h2 class="h4 fw-bold mb-4 text-center">Featured Products</h2>
+        {% if products %}
+        <div class="grid-container">
+            {% for prod in products %}
+            <div class="grid-item product-item">
+                <a href="{% url 'product_var' prod.id %}" class="text-decoration-none text-dark">
+                    <div class="grid-img-container">
+                        {% if prod.image %}
+                        <img src="{{ prod.image.url }}" alt="{{ prod.name }}" loading="lazy" class="img-fluid">
+                        {% else %}
+                        <img src="{% static 'images/default-product.jpg' %}" alt="Default product" loading="lazy" class="img-fluid">
+                        {% endif %}
+                        {% if prod.is_new %}
+                        <span class="grid-badge new">New</span>
+                        {% endif %}
+                        {% if prod.discount_percentage %}
+                        <span class="grid-badge discount">{{ prod.discount_percentage }}% Off</span>
+                        {% endif %}
+                    </div>
+                    <div class="grid-content">
+                        <div class="d-flex justify-content-between">
+                            <h3>{{ prod.name|truncatechars:40 }}</h3>
+                            {% if prod.average_rating %}
+                            <span class="rating-badge">★ {{ prod.average_rating|floatformat:1 }}</span>
+                            {% endif %}
+                        </div>
+                        <p class="store-name">{{ prod.seller.store_name }}</p>
+                        
+                        <!-- Variant Information -->
+                        {% if prod.variants.all %}
+                        <div class="variant-info">
+                            <div class="size-variants">
+                                {% for variant in prod.variants.all|slice:":2" %}
+                                {% if variant.size %}
+                                
+                                <span class="size-pill"> {% if variant.color_hex %}
+                                <span class="color-dot" style="background-color: {{ variant.color_hex }};" 
+                                      title="{{ variant.color_name|default:variant.color_hex }}"></span>
+                                {% endif %}{{ variant.size }}</span>
+                                {% endif %}
+                                {% endfor %}
+                                {% if prod.variants.all|length > 5 %}
+                                <span class="size-pill more">+{{ prod.variants.all|length|add:"-5" }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5 my-5">
+            <div class="mb-4">
+                <i class="fas fa-box-open fa-3x text-muted"></i>
+            </div>
+            <h3 class="h5 mb-3">No products available yet</h3>
+            <p class="text-muted mb-4">Check back soon for new arrivals</p>
+            <a href="{% url 'home' %}" class="btn btn-dark">Continue Shopping</a>
+        </div>
+        {% endif %}
+    </section>
+</div>
+
+<style>
+    /* Unified Grid Container */
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1.5rem;
+        padding: 0.5rem;
+    }
+
+    /* Base Grid Item Styles */
+    .grid-item {
+        background: white;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .grid-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.12);
+    }
+
+    /* Image Container */
+    .grid-img-container {
+        position: relative;
+        padding-top: 100%;
+        background: #f8f9fa;
+        overflow: hidden;
+    }
+
+    .grid-img-container img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .grid-item:hover .grid-img-container img {
+        transform: scale(1.05);
+    }
+
+    /* Content Area */
+    .grid-content {
+        padding: 1.25rem;
+    }
+
+    .grid-content h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #333;
+    }
+
+    /* Badges */
+    .grid-badge {
+        position: absolute;
+        top: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .grid-badge.new {
+        right: 0.75rem;
+        background: #ff5252;
+        color: white;
+    }
+
+    .grid-badge.discount {
+        left: 0.75rem;
+        background: #4caf50;
+        color: white;
+    }
+
+    /* Subcategory Specific Styles */
+    .subcategory-item {
+        text-align: center;
+        border: 1px solid #eee;
+    }
+
+    .subcategory-item .grid-content {
+        padding: 1.5rem 1rem;
+    }
+
+    .subcategory-item h3 {
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .grid-link {
+        color: #666;
+        font-size: 0.85rem;
+        transition: color 0.2s ease;
+    }
+
+    .subcategory-item:hover .grid-link {
+        color: var(--primary-color);
+    }
+
+    /* Product Specific Styles */
+    .product-item {
+        text-align: left;
+    }
+
+    .store-name {
+        color: #666;
+        font-size: 0.85rem;
+        margin-bottom: 0.75rem;
+    }
+
+    /* Variant Information */
+    .variant-info {
+        margin: 0.75rem 0;
+    }
+
+    /* Color variants */
+    .color-variants {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .color-dot {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 1px solid rgba(0,0,0,0.1);
+        display: inline-block;
+        cursor: pointer;
+    }
+
+    /* Size variants */
+    .size-variants {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+    }
+
+    .size-pill {
+        display: inline-block;
+        padding: 0.2rem 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        background: #f8f9fa;
+        color: #555;
+    }
+
+    .size-pill.more {
+        background: transparent;
+        border: 1px dashed #aaa;
+    }
+
+    /* Pricing */
+    .price-container {
+        margin-top: 0.5rem;
+    }
+
+    .current-price {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #333;
+    }
+
+    .original-price {
+        text-decoration: line-through;
+        color: #999;
+        font-size: 0.9rem;
+        margin-left: 0.5rem;
+    }
+
+    /* Rating */
+    .rating-badge {
+        background: #ffc107;
+        color: #333;
+        padding: 0.15rem 0.4rem;
+        border-radius: 0.25rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 992px) {
+        .grid-container {
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        }
+    }
+
+    @media (max-width: 768px) {
+        .grid-container {
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 1rem;
+        }
+        
+        .grid-content {
+            padding: 1rem;
+        }
+        
+        .size-pill {
+            font-size: 0.7rem;
+            padding: 0.15rem 0.4rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .grid-container {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .subcategory-item .grid-content {
+            padding: 1rem 0.5rem;
+        }
+    }
+</style>
+
+<script>
+    // Initialize tooltips for color variants
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('.color-dot'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    });
+</script>
+{% endblock %}
