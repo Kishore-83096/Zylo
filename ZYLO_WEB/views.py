@@ -10,6 +10,7 @@ from ZYLO_SELLER.models import Category, Product, SellerProfile,storelogo,Produc
 from .context_processors import global_context
 from django.db import transaction
 import json
+from django.db.models import Count, Q
 import logging
 logger = logging.getLogger(__name__)
 
@@ -628,3 +629,25 @@ def subcategory(request, subcategory_id,name):
     products = Product.objects.filter(subcategory=subcategory_id)\
         .select_related('seller').prefetch_related('variants')# Single optimized query to get all required data
     return render(request, 'ZYLO_WEB/subcategory.html',{'products':products,'name':name})
+
+
+
+
+
+
+def store_preview(request, store_id):
+    store = get_object_or_404(SellerProfile, id=store_id)
+    products = Product.objects.filter(seller=store_id).select_related('category')
+    
+    # Get categories and annotate with product count
+    categories = Category.objects.filter(
+        products__seller=store_id
+    ).distinct().annotate(
+        product_count=Count('products', filter=Q(products__seller=store_id))
+    )
+    
+    return render(request, 'ZYLO_WEB/storepreview.html', {
+        'store': store,
+        'products': products,
+        'categories': categories
+    })

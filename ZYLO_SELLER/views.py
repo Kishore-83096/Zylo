@@ -147,6 +147,7 @@ def storeprofile(request):
     # --- Fetch existing data for display ---
     try:
         seller_profile = SellerProfile.objects.get(user=request.user)
+        print(seller_profile.id)
         products = seller_profile.products.all()
         total_products = products.count()  # Fetch the SellerProfile for the logged-in user
         try:
@@ -201,6 +202,7 @@ def storeprofile(request):
     contact_form = SellerContactForm(instance=seller_profile)  # Initialize SellerContactForm
 
     context = {
+        'seller_profile': seller_profile,  # Pass the seller profile to the template
         "store_name": seller_profile.store_name if seller_profile else "Your Store",  # Default name if no profile
         "logo": logo_instance,  # Pass the logo instance to the context
         "profile_form": profile_form,  # Pass the SellerProfileForm to the context

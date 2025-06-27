@@ -25,4 +25,5 @@ urlpatterns = [
     path('wishlist/remove/<int:variant_id>/', views.remove_from_wishlist, name='remove_from_wishlist'),
     path('category/<int:category_id>',views.category,name='category'),
     path('subcategory/<int:subcategory_id>/<slug:name>/',views.subcategory,name='subcategory'),
+    path('storepreview/<int:store_id>',views.store_preview,name='store_preview')
 ]

@@ -96,12 +96,12 @@
     <!-- Stores Section -->
     <section id="stores" class="stores-section section-padding">
         <div class="section-header">
-            <h2>Featured Designers</h2>
+            <h2>Featured Stores</h2>
             <a href="#" class="view-all">View All</a>
         </div>
         <div class="store-grid">
             {% for store in available_stores|slice:":16" %}
-            <a href="#" class="store-card">
+            <a href="{% url 'store_preview' store.id %}" class="store-card">
                 <div class="store-logo">
                     {% if store.storelogo %}
                         <img src="{{ store.storelogo.image.url }}" alt="{{ store.store_name }} logo" loading="lazy">
