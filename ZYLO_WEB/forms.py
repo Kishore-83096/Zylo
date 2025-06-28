@@ -4,6 +4,10 @@ from django.contrib.auth.models import User
 from django.core.validators import MinLengthValidator, MaxLengthValidator
 from ZYLO_WEB.models import UserProfilepictures, ContactInformation, SavedAddress, SavedCard
 from datetime import date
+from django.contrib.auth.forms import PasswordChangeForm
+
+
+
 
 
 class registrationform(UserCreationForm):
@@ -50,6 +54,15 @@ class registrationform(UserCreationForm):
         return email
 
 
+
+
+
+
+
+
+
+
+
 class adminLoginForm(forms.Form):
     Email = forms.CharField(
         label="Email",
@@ -68,10 +81,22 @@ class adminLoginForm(forms.Form):
     )
 
 
+
+
+
+
+
+
 class UserProfileEditForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'username'] # Add other fields you want to allow editing
+
+
+
+
+
+
 
 class UserProfilepicturesForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
@@ -81,6 +106,12 @@ class UserProfilepicturesForm(forms.ModelForm):
     class Meta:
         model = UserProfilepictures
         fields = ['image'] # We only want the user to modify the image here
+
+
+
+
+
+
 
 
 class ContactInformationForm(forms.ModelForm):
@@ -124,6 +155,16 @@ class ContactInformationForm(forms.ModelForm):
     #     if phone_number and not phone_number.replace(' ', '').replace('-', '').isdigit():
     #         raise forms.ValidationError("Phone number must contain only digits.")
     #     return phone_number
+
+
+
+
+
+
+
+
+
+
 
 class SavedAddressForm(forms.ModelForm):
     class Meta:
@@ -191,15 +232,8 @@ class SavedAddressForm(forms.ModelForm):
         }
 
 
-# your_app_name/forms.py
-from django import forms
-from django.contrib.auth.models import User
-from .models import UserProfilepictures, ContactInformation, SavedAddress, SavedCard
-from datetime import date
 
-# Your existing forms will be here...
 
-# ... (UserProfileEditForm, UserProfilepicturesForm, ContactInformationForm, SavedAddressForm) ...
 
 
 class SavedCardForm(forms.ModelForm):
@@ -289,3 +323,33 @@ class SavedCardForm(forms.ModelForm):
             elif expiration_year == today.year and expiration_month < today.month:
                 raise forms.ValidationError("Expiration month cannot be in the past for the current year.")
         return cleaned_data
+    
+
+
+
+
+
+
+
+
+
+
+class CustomPasswordChangeForm(PasswordChangeForm):
+    old_password = forms.CharField(
+        label="Current Password",
+        widget=forms.PasswordInput(attrs={'class': 'form-control'})
+    )
+    new_password1 = forms.CharField(
+        label="New Password",
+        widget=forms.PasswordInput(attrs={'class': 'form-control'})
+    )
+    new_password2 = forms.CharField(
+        label="Confirm New Password",
+        widget=forms.PasswordInput(attrs={'class': 'form-control'})
+    )
+
+
+
+class AccountDeletionForm(forms.Form):
+    email = forms.EmailField(widget=forms.EmailInput(attrs={'class': 'form-control'}))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))

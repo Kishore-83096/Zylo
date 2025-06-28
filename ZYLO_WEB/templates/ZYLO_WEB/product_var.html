@@ -15,7 +15,7 @@
     </nav>
 
     <div class="product-grid grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Product Gallery - Updated with hover controls -->
+        <!-- Product Gallery -->
         <div class="product-gallery bg-white rounded-xl shadow-sm overflow-hidden group">
             <div class="slider-container relative aspect-square">
                 <div class="slider flex h-full transition-transform duration-300">
@@ -27,7 +27,7 @@
                     {% endfor %}
                 </div>
                 
-                <!-- Navigation Arrows - Visible on hover -->
+                <!-- Navigation Arrows -->
                 <button class="slider-btn prev-btn absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 w-10 h-10 rounded-full shadow-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
                     <i class="fas fa-chevron-left text-gray-700"></i>
                 </button>
@@ -35,7 +35,7 @@
                     <i class="fas fa-chevron-right text-gray-700"></i>
                 </button>
                 
-                <!-- Dots Indicator - Improved visibility -->
+                <!-- Dots Indicator -->
                 <div class="slider-dots absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
                     {% for variant in variants %}
                     <button class="slider-dot w-2 h-2 rounded-full transition-all duration-200 {% if forloop.first %}bg-blue-600 w-3{% else %}bg-gray-300 hover:bg-gray-400{% endif %}"></button>
@@ -44,7 +44,7 @@
             </div>
         </div>
 
-        <!-- Product Info (unchanged) -->
+        <!-- Product Info -->
         <div class="product-info bg-white rounded-xl shadow-sm p-6">
             <!-- Store Info -->
             <div class="store-info flex items-center gap-3 pb-4 mb-4 border-b border-gray-100">
@@ -61,7 +61,6 @@
                 <span class="category-tag bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-medium">
                     {{ product.subcategory }}
                 </span>
-                
             </div>
 
             <!-- Variant Selection -->
@@ -73,7 +72,7 @@
                 
                 <div class="variant-list space-y-4">
                     {% for variant in variants %}
-                    <div class="variant-card border border-gray-200 rounded-lg p-4 transition-all hover:border-blue-600 {% if variant.stock == 0 %}opacity-70 bg-gray-50{% endif %} {% if forloop.first %}border-2 border-blue-600 bg-blue-50{% endif %}" 
+                    <div class="variant-card border border-gray-200 rounded-lg p-4 transition-all hover:border-blue-600 {% if variant.stock == 0 or not variant.on_sale %}opacity-70 bg-gray-50{% endif %} {% if forloop.first %}border-2 border-blue-600 bg-blue-50{% endif %}" 
                          data-variant-id="{{ variant.id }}" data-slide-index="{{ forloop.counter0 }}">
                         <div class="flex gap-4">
                             <!-- Variant Image -->
@@ -109,23 +108,35 @@
                                 </div>
                                 
                                 <!-- Stock Status -->
-                                <div class="variant-stock text-sm flex items-center gap-1 {% if variant.stock > 0 %}text-green-600{% else %}text-red-600{% endif %}">
-                                    <i class="fas {% if variant.stock > 0 %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i>
-                                    {% if variant.stock > 0 %}In Stock ({{ variant.stock }}){% else %}Out of Stock{% endif %}
+                                <div class="variant-stock text-sm flex items-center gap-1 {% if variant.stock > 0 and variant.on_sale %}text-green-600{% else %}text-red-600{% endif %}">
+                                    <i class="fas {% if variant.stock > 0 and variant.on_sale %}fa-check-circle{% else %}fa-times-circle{% endif %}"></i>
+                                    {% if not variant.on_sale %}
+                                        Not Ready for Sale
+                                    {% elif variant.stock > 0 %}
+                                        In Stock ({{ variant.stock }})
+                                    {% else %}
+                                        Out of Stock
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
                         
                         <!-- Actions -->
                         <div class="variant-actions mt-4 flex flex-col sm:flex-row gap-2">
-                            {% if variant.stock > 0 %}
+                            {% if variant.stock > 0 and variant.on_sale %}
                                 <a href="{% url 'add_to_cart' variant.id %}" 
-                                   class="btn-primary bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center justify-center gap-2 transition-all flex-grow text-center font-medium shadow-sm hover:shadow-md hover:-translate-y-0.5">
+                                   class="add-to-cart-btn bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center justify-center gap-2 transition-all flex-grow text-center font-medium shadow-sm hover:shadow-md hover:-translate-y-0.5"
+                                   data-variant-id="{{ variant.id }}">
                                     <i class="fas fa-shopping-cart"></i> Add to Cart
                                 </a>
                             {% else %}
                                 <button class="btn-primary bg-gray-400 text-white px-4 py-2 rounded-md flex items-center justify-center gap-2 cursor-not-allowed flex-grow" disabled>
-                                    <i class="fas fa-shopping-cart"></i> Out of Stock
+                                    <i class="fas fa-shopping-cart"></i> 
+                                    {% if not variant.on_sale %}
+                                        Not Ready for Sale
+                                    {% else %}
+                                        Out of Stock
+                                    {% endif %}
                                 </button>
                             {% endif %}
                             
@@ -171,7 +182,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Slider functionality with updated dot visibility
+    // Slider functionality
     const slider = document.querySelector('.slider');
     const slides = document.querySelectorAll('.slide');
     const prevBtn = document.querySelector('.prev-btn');
@@ -234,9 +245,55 @@ document.addEventListener('DOMContentLoaded', function() {
     // Click on variant card to show corresponding slide
     variantCards.forEach(card => {
         card.addEventListener('click', function(e) {
-            if (e.target.closest('.btn, .specs-btn')) return;
+            if (e.target.closest('.btn, .specs-btn, .quantity-selector, .quantity-input')) return;
             const slideIndex = parseInt(this.getAttribute('data-slide-index'));
             goToSlide(slideIndex);
+        });
+    });
+    
+    // Quantity selector functionality
+    document.querySelectorAll('.increment-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const variantId = this.getAttribute('data-variant-id');
+            const input = document.querySelector(`.quantity-input[data-variant-id="${variantId}"]`);
+            const max = parseInt(input.getAttribute('max'));
+            if (parseInt(input.value) < max) {
+                input.value = parseInt(input.value) + 1;
+            }
+        });
+    });
+    
+    document.querySelectorAll('.decrement-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const variantId = this.getAttribute('data-variant-id');
+            const input = document.querySelector(`.quantity-input[data-variant-id="${variantId}"]`);
+            if (parseInt(input.value) > 1) {
+                input.value = parseInt(input.value) - 1;
+            }
+        });
+    });
+    
+    // Quantity input validation
+    document.querySelectorAll('.quantity-input').forEach(input => {
+        input.addEventListener('change', function() {
+            const min = parseInt(this.getAttribute('min'));
+            const max = parseInt(this.getAttribute('max'));
+            let value = parseInt(this.value);
+            
+            if (isNaN(value)) value = min;
+            if (value < min) value = min;
+            if (value > max) value = max;
+            
+            this.value = value;
+        });
+    });
+    
+    // Update add to cart URLs with quantity
+    document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            const variantId = this.getAttribute('data-variant-id');
+            const quantity = document.querySelector(`.quantity-input[data-variant-id="${variantId}"]`).value;
+            this.href = `#`.replace('0', `${variantId}?quantity=${quantity}`);
         });
     });
     
@@ -342,6 +399,26 @@ document.addEventListener('DOMContentLoaded', function() {
     background-color: #9CA3AF !important;
 }
 
+/* Quantity selector styling */
+.quantity-selector {
+    transition: all 0.2s ease;
+}
+
+.quantity-selector button {
+    transition: color 0.2s ease;
+    padding: 0 0.5rem;
+}
+
+.quantity-input {
+    -moz-appearance: textfield;
+}
+
+.quantity-input::-webkit-outer-spin-button,
+.quantity-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
 /* Enhanced blue color scheme */
 .btn-primary {
     background-color: #2563eb; /* blue-600 */
@@ -375,6 +452,11 @@ document.addEventListener('DOMContentLoaded', function() {
     .variant-actions a, 
     .variant-actions button {
         width: 100%;
+    }
+    
+    .quantity-selector {
+        width: 100%;
+        justify-content: center;
     }
 }
 </style>

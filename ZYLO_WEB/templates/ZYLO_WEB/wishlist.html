@@ -2,342 +2,92 @@
 {% load static %}
 
 {% block content %}
-<div class="wishlist-container">
-    <div class="wishlist-header">
-        <h2 class="wishlist-title">Your Wishlist</h2>
-        <p class="wishlist-count">
-            {% if wishlist_items %}
-                {{ wishlist_items|length }} item{{ wishlist_items|length|pluralize }}
-            {% else %}
-                0 items
-            {% endif %}
-        </p>
-    </div>
-    
-    {% if wishlist_items %}
-    <div class="wishlist-items">
-        {% for variant in wishlist_items %}
-        <div class="wishlist-item">
-            <div class="item-image">
-                <img src="{{ variant.variant_image.url }}" alt="{{ variant.product.name }}" class="product-image">
-                <div class="stock-badge {% if variant.stock > 0 %}in-stock{% else %}out-of-stock{% endif %}">
-                    {% if variant.stock > 0 %}
-                        In Stock
-                    {% else %}
-                        Out of Stock
-                    {% endif %}
-                </div>
-            </div>
-            <div class="item-details">
-                <h3 class="product-name">{{ variant.product.name }}</h3>
-                <div class="product-variants">
-                    <p><strong>Size:</strong> {{ variant.size }}</p>
-                    <p><strong>Color:</strong> {{ variant.color }}</p>
-                </div>
-                <div class="product-price">₹{{ variant.price }}</div>
-                {% if variant.discounted_price %}
-                <div class="product-discount">
-                    <span class="original-price">₹{{ variant.price }}</span>
-                    <span class="discounted-price">₹{{ variant.discounted_price }}</span>
-                    <span class="discount-percent">
-                        ({{ variant.discount_percent }}% OFF)
-                    </span>
-                </div>
-                {% endif %}
-            </div>
-            <div class="item-actions">
-                {% if variant.stock > 0 %}
-                    <a href="{% url 'add_to_cart' variant.id %}" class="add-to-cart-btn">
-                        <i class="fas fa-shopping-cart"></i> Add to Cart
-                    </a>
-                {% else %}
-                    <button class="add-to-cart-btn out-of-stock-btn" disabled>
-                        <i class="fas fa-shopping-cart"></i> Out of Stock
-                    </button>
-                {% endif %}
-                <a href="{% url 'remove_from_wishlist' variant.id %}" class="remove-btn">
-                    <i class="far fa-trash-alt"></i> Remove
-                </a>
-                <a href="{% url 'product_var' variant.product_id %}" class="view-details-btn">
-                    <i class="far fa-eye"></i> View Details
-                </a>
-            </div>
+<div class="pt-[calc(var(--header-height)+20px)] pb-10 px-4 max-w-7xl mx-auto">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900">My Wishlist</h1>
+            <p class="text-gray-500 mt-1">Your saved items for later</p>
         </div>
-        {% endfor %}
+        <div class="text-sm text-gray-500">
+            <span class="font-medium text-gray-700">{{ variants|length }}</span> item{{ variants|pluralize }}
+        </div>
     </div>
+
+    {% if variants %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {% for variant in variants %}
+                <div class="group relative border border-gray-200 rounded-lg overflow-hidden bg-white hover:shadow-md transition-shadow duration-200">
+                    <!-- Product Image with Quick View -->
+                    <div class="relative aspect-square bg-gray-50">
+                        <img src="{{ variant.variant_image.url }}" alt="{{ variant.product.name }}" 
+                             class="w-full h-full object-contain p-4 transition-transform duration-300 group-hover:scale-105">
+                        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/10">
+                            <a href="{% url 'product_var' variant.product_id %}" 
+                               class="bg-white text-gray-800 px-4 py-2 rounded-full font-medium text-sm shadow-sm hover:bg-gray-100 transition-colors">
+                                Quick View
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Product Info -->
+                    <div class="p-4">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-medium text-gray-900 line-clamp-1">{{ variant.product.name }}</h3>
+                                <p class="text-gray-500 text-sm mt-1">Variant: {{ variant.color }} {{ variant.size }}</p>
+                            </div>
+                            <form method="post" action="{% url 'remove_from_wishlist' variant.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="text-gray-400 hover:text-red-500 transition-colors" aria-label="Remove item">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Price & Action -->
+                        <div class="mt-4 flex justify-between items-center">
+                            <div>
+                                {% if variant.discounted_price %}
+                                    <span class="text-lg font-bold text-gray-900">₹{{ variant.discounted_price }}</span>
+                                    <span class="text-sm text-gray-500 line-through ml-1">₹{{ variant.price }}</span>
+                                {% else %}
+                                    <span class="text-lg font-bold text-gray-900">₹{{ variant.price }}</span>
+                                {% endif %}
+                            </div>
+                            <a href="{% url 'product_var' variant.product_id %}" 
+                               class="text-sm font-medium text-purple-700 hover:text-purple-800 hover:underline">
+                                View Details
+                            </a>
+                        </div>
+
+                        <!-- Stock Status -->
+                        <div class="mt-3 text-sm flex items-center {% if variant.stock > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                {% if variant.stock > 0 %}
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                {% else %}
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                {% endif %}
+                            </svg>
+                            {% if variant.stock > 0 %}In Stock{% else %}Out of Stock{% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
     {% else %}
-    <div class="empty-wishlist">
-        <div class="empty-icon">
-            <i class="far fa-heart"></i>
+        <div class="text-center py-16 border-2 border-dashed border-gray-200 rounded-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+            <h3 class="mt-4 text-lg font-medium text-gray-900">Your wishlist is empty</h3>
+            <p class="mt-1 text-gray-500">Save items you love for easy access later</p>
+            <a href="{% url 'home' %}" class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none">
+                Start Shopping
+            </a>
         </div>
-        <h3>Your wishlist is empty</h3>
-        <p>Looks like you haven't added anything to your wishlist yet</p>
-        <a href="{% url 'home' %}" class="continue-shopping-btn">
-            Continue Shopping
-        </a>
-    </div>
     {% endif %}
 </div>
-
-<style>
-    /* Main Container */
-    .wishlist-container {
-        max-width: 1200px;
-        margin: 30px auto;
-        padding: 0 20px;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    
-    /* Header */
-    .wishlist-header {
-        margin-bottom: 30px;
-        border-bottom: 1px solid #eee;
-        padding-bottom: 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .wishlist-title {
-        font-size: 28px;
-        font-weight: 600;
-        color: #333;
-    }
-    
-    .wishlist-count {
-        color: #666;
-        font-size: 16px;
-    }
-    
-    /* Wishlist Items */
-    .wishlist-items {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-        gap: 20px;
-    }
-    
-    .wishlist-item {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-    
-    .wishlist-item:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-    
-    .item-image {
-        position: relative;
-        margin-bottom: 15px;
-    }
-    
-    .product-image {
-        width: 100%;
-        height: 200px;
-        object-fit: contain;
-        border-radius: 4px;
-    }
-    
-    .stock-badge {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        padding: 5px 10px;
-        border-radius: 4px;
-        font-size: 12px;
-        font-weight: 500;
-        color: white;
-    }
-    
-    .stock-badge.in-stock {
-        background-color: #28a745;
-    }
-    
-    .stock-badge.out-of-stock {
-        background-color: #dc3545;
-    }
-    
-    /* Item Details */
-    .item-details {
-        flex: 1;
-        margin-bottom: 15px;
-    }
-    
-    .product-name {
-        font-size: 18px;
-        font-weight: 600;
-        margin-bottom: 10px;
-        color: #333;
-    }
-    
-    .product-variants {
-        font-size: 14px;
-        color: #666;
-        margin-bottom: 10px;
-    }
-    
-    .product-variants p {
-        margin: 5px 0;
-    }
-    
-    .product-price {
-        font-size: 18px;
-        font-weight: 600;
-        color: #333;
-        margin: 10px 0;
-    }
-    
-    .product-discount {
-        margin: 10px 0;
-    }
-    
-    .original-price {
-        text-decoration: line-through;
-        color: #999;
-        margin-right: 10px;
-    }
-    
-    .discounted-price {
-        font-size: 18px;
-        font-weight: 600;
-        color: #d32f2f;
-    }
-    
-    .discount-percent {
-        color: #28a745;
-        font-size: 14px;
-        margin-left: 5px;
-    }
-    
-    /* Item Actions */
-    .item-actions {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-    
-    .add-to-cart-btn, .out-of-stock-btn, .remove-btn, .view-details-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        padding: 10px;
-        border-radius: 4px;
-        text-align: center;
-        text-decoration: none;
-        font-weight: 500;
-        transition: all 0.2s;
-        cursor: pointer;
-    }
-    
-    .add-to-cart-btn {
-        background-color: #2a5cb8;
-        color: white;
-        border: none;
-    }
-    
-    .add-to-cart-btn:hover {
-        background-color: #1e4a9b;
-    }
-    
-    .out-of-stock-btn {
-        background-color: #6c757d;
-        color: white;
-        cursor: not-allowed;
-        opacity: 0.7;
-        border: none;
-    }
-    
-    .remove-btn {
-        background-color: #f8f9fa;
-        color: #dc3545;
-        border: 1px solid #ddd;
-    }
-    
-    .remove-btn:hover {
-        background-color: #f1f1f1;
-    }
-    
-    .view-details-btn {
-        background-color: white;
-        color: #2a5cb8;
-        border: 1px solid #2a5cb8;
-    }
-    
-    .view-details-btn:hover {
-        background-color: #f0f5ff;
-    }
-    
-    /* Empty Wishlist */
-    .empty-wishlist {
-        text-align: center;
-        padding: 50px 20px;
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    }
-    
-    .empty-icon {
-        font-size: 50px;
-        color: #ccc;
-        margin-bottom: 20px;
-    }
-    
-    .empty-wishlist h3 {
-        font-size: 22px;
-        margin-bottom: 10px;
-        color: #333;
-    }
-    
-    .empty-wishlist p {
-        color: #666;
-        margin-bottom: 20px;
-    }
-    
-    .continue-shopping-btn {
-        display: inline-block;
-        padding: 12px 30px;
-        background: #2a5cb8;
-        color: white;
-        text-decoration: none;
-        border-radius: 4px;
-        font-weight: 500;
-        transition: background 0.2s;
-    }
-    
-    .continue-shopping-btn:hover {
-        background: #1e4a9b;
-    }
-    
-    /* Responsive */
-    @media (max-width: 768px) {
-        .wishlist-items {
-            grid-template-columns: 1fr;
-        }
-        
-        .wishlist-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 10px;
-        }
-    }
-</style>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Add confirmation for remove buttons
-        document.querySelectorAll('.remove-btn').forEach(button => {
-            button.addEventListener('click', function(e) {
-                if (!confirm('Are you sure you want to remove this item from your wishlist?')) {
-                    e.preventDefault();
-                }
-            });
-        });
-    });
-</script>
 {% endblock %}

@@ -7,7 +7,15 @@ from django.contrib.auth.models import User
 
 
 
-# Create your models here.
+
+
+
+
+
+
+
+
+
 
 class ProductCategory(models.Model):
     name = models.CharField(max_length=255, unique=True)
@@ -44,6 +52,17 @@ class ProductCategory(models.Model):
         if self.image and os.path.exists(self.image.path):
             os.remove(self.image.path)
         super().delete(*args, **kwargs)
+
+
+
+
+
+
+
+
+
+
+
 
 
 class ProductSubcategory(models.Model):
@@ -86,6 +105,18 @@ class ProductSubcategory(models.Model):
             os.remove(self.image.path)
         super().delete(*args, **kwargs)
     
+
+
+
+
+
+
+
+
+
+
+
+
 
 class UserProfilepictures(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -171,6 +202,21 @@ class UserProfilepictures(models.Model):
         super().delete(*args, **kwargs)
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class ContactInformation(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -204,6 +250,17 @@ class ContactInformation(models.Model):
     def __str__(self):
         # Handle cases where user might not be available for some reason (though unlikely with OneToOne)
         return f"Contact Info for {self.user.username}" if self.user else f"Contact Info ID: {self.pk}"
+
+
+
+
+
+
+
+
+
+
+
 
 class SavedAddress(models.Model):
     ADDRESS_CHOICES = [
@@ -272,46 +329,22 @@ class SavedCard(models.Model):
 
 
 
-class cart_Wishlist(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cart_wishlist')
-    quantity = models.IntegerField(default=1)
+
+
+
+
+
+
+
+class Wishlist(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='wishlist')
     date_added = models.DateTimeField(auto_now_add=True)
-    cart = models.TextField(default=json.dumps([]))  # Store as JSON list
     wishlist = models.TextField(default=json.dumps([]))  # Store as JSON list
-    
     def __str__(self):
-        return f"{self.user.username}'s Cart/Wishlist"
-    
-    def get_cart_items(self):
-        """Returns the cart items as a Python list"""
-        return json.loads(self.cart)
-    
+        return f"{self.user.username}'s Wishlist"
     def get_wishlist_items(self):
         """Returns the wishlist items as a Python list"""
         return json.loads(self.wishlist)
-    
-    def add_to_cart(self, variant_id):
-        """Add a variant ID to the cart"""
-        cart_items = self.get_cart_items()
-        if variant_id not in cart_items:
-            cart_items.append(variant_id)
-            self.cart = json.dumps(cart_items)
-            self.save()
-            return True
-        return False
-    
-    def remove_from_cart(self, variant_id):
-        """Remove a variant ID from the cart"""
-        cart_items = self.get_cart_items()
-        if variant_id in cart_items:
-            cart_items.remove(variant_id)
-            self.cart = json.dumps(cart_items)
-            self.save()
-            return True
-        return False
-    
-
-
     def add_to_wishlist(self, variant_id):
         """Add variant to wishlist"""
         wishlist_items = self.get_wishlist_items()
@@ -321,7 +354,6 @@ class cart_Wishlist(models.Model):
             self.save()
             return True
         return False
-    
     def remove_from_wishlist(self, variant_id):
         """Remove variant from wishlist"""
         wishlist_items = self.get_wishlist_items()
@@ -331,3 +363,71 @@ class cart_Wishlist(models.Model):
             self.save()
             return True
         return False
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import json
+from django.db import models
+from django.contrib.auth.models import User
+
+class Cart(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cart')
+    date_added = models.DateTimeField(auto_now_add=True)
+    cart = models.TextField(default=json.dumps([]))  # List of variant IDs
+    quantities = models.TextField(default=json.dumps({}))  # Variant ID : Quantity
+
+    def __str__(self):
+        return f"{self.user.username}'s Cart"
+
+    def get_cart_items(self):
+        return json.loads(self.cart)
+
+    def get_quantities(self):
+        return json.loads(self.quantities)
+
+    def add_to_cart(self, variant_id):
+        cart_items = self.get_cart_items()
+        if variant_id not in cart_items:
+            cart_items.append(variant_id)
+            self.cart = json.dumps(cart_items)
+
+            quantities = self.get_quantities()
+            quantities[str(variant_id)] = 1  # default quantity
+            self.quantities = json.dumps(quantities)
+
+            self.save()
+            return True
+        return False
+
+    def set_quantity(self, variant_id, quantity):
+        quantities = self.get_quantities()
+        quantities[str(variant_id)] = quantity
+        self.quantities = json.dumps(quantities)
+        self.save()
+
+    def remove_from_cart(self, variant_id):
+        cart_items = self.get_cart_items()
+        quantities = self.get_quantities()
+        variant_id_str = str(variant_id)
+
+        if variant_id in cart_items:
+            cart_items.remove(variant_id)
+        if variant_id_str in quantities:
+            del quantities[variant_id_str]
+
+        self.cart = json.dumps(cart_items)
+        self.quantities = json.dumps(quantities)
+        self.save()
+        return True

@@ -5,14 +5,23 @@ from .forms import adminLoginForm,registrationform,ContactInformationForm,UserPr
 from django.contrib import messages
 from django.contrib.auth import authenticate, login,logout
 from django.contrib.auth.decorators import login_required
-from .models import ContactInformation,SavedAddress,SavedCard,UserProfilepictures,cart_Wishlist
+from .models import ContactInformation,SavedAddress,SavedCard,UserProfilepictures,Wishlist,Cart
 from ZYLO_SELLER.models import Category, Product, SellerProfile,storelogo,ProductVariant,SubCategory
 from .context_processors import global_context
 from django.db import transaction
 import json
 from django.db.models import Count, Q
+from django.contrib.auth import update_session_auth_hash, logout
+from .forms import CustomPasswordChangeForm
+from .forms import CustomPasswordChangeForm, AccountDeletionForm
+from django.http import JsonResponse
 import logging
 logger = logging.getLogger(__name__)
+
+
+
+
+
 
 
 
@@ -21,6 +30,14 @@ logger = logging.getLogger(__name__)
 # Create your views here.
 def zylolandingpageview(request):
     return render(request, 'base/Landingpage.html')
+
+
+
+
+
+
+
+
 
 
 def register(request):
@@ -35,6 +52,13 @@ def register(request):
             messages.error(request, 'Please correct the errors below.')
     
     return render(request, 'ZYLO_WEB/register.html', {'form': form})
+
+
+
+
+
+
+
 
 
 
@@ -69,6 +93,15 @@ def account_login(request):
 
     return render(request, 'ZYLO_WEB/login.html', {'form': form})
 
+
+
+
+
+
+
+
+
+
 def account_logout(request):
     if request.user.is_authenticated:  # Check if the user is logged in
         logout(request)  # Log the user out
@@ -76,6 +109,15 @@ def account_logout(request):
     else:
         messages.warning(request, "You are not logged in.")  # Optional: message for not logged in users
     return redirect('account_login')  # Redirect to the login page
+
+
+
+
+
+
+
+
+
 
 
 
@@ -122,6 +164,14 @@ def home(request):
     
     
     return render(request, 'ZYLO_WEB/home.html', context)
+
+
+
+
+
+
+
+
 
 
 @login_required
@@ -221,6 +271,17 @@ def profile(request):
 
     return render(request, 'ZYLO_WEB/profile.html', context)
 
+
+
+
+
+
+
+
+
+
+
+
 @login_required
 def profile_edit(request):
     if request.method == 'POST':
@@ -235,6 +296,17 @@ def profile_edit(request):
             return redirect('profile')
     else:
         return redirect('profile')
+
+
+
+
+
+
+
+
+
+
+
 
 @login_required
 def profile_picture_edit(request):
@@ -253,6 +325,18 @@ def profile_picture_edit(request):
     else:
         return redirect('profile')
 
+
+
+
+
+
+
+
+
+
+
+
+
 @login_required
 def contact_info_edit(request):
     contact_information, created = ContactInformation.objects.get_or_create(user=request.user)
@@ -269,6 +353,16 @@ def contact_info_edit(request):
             return redirect('profile')
     else:
         return redirect('profile')
+
+
+
+
+
+
+
+
+
+
 
 @login_required
 def add_saved_address(request):
@@ -293,6 +387,20 @@ def add_saved_address(request):
             return redirect('profile')
     else:
         return redirect('profile')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 @login_required
 def edit_saved_address(request, address_id):
@@ -321,6 +429,17 @@ def edit_saved_address(request, address_id):
         return render(request, 'your_template_name.html', {'form': form, 'address': address}) # <--- Render the template with the form
 
 
+
+
+
+
+
+
+
+
+
+
+
 @login_required
 def delete_saved_address(request, address_id):
     try:
@@ -333,6 +452,17 @@ def delete_saved_address(request, address_id):
     except Exception as e:
         messages.error(request, f'An error occurred while deleting the address: {e}')
     return redirect('profile')
+
+
+
+
+
+
+
+
+
+
+
 
 @login_required
 def add_saved_card(request):
@@ -356,6 +486,20 @@ def add_saved_card(request):
     else:
         return redirect('profile')
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @login_required
 def edit_saved_card(request, card_id):
     card = get_object_or_404(SavedCard, id=card_id, user=request.user)
@@ -376,6 +520,19 @@ def edit_saved_card(request, card_id):
     else:
         return redirect('profile')
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 @login_required
 def delete_saved_card(request, card_id):
     try:
@@ -388,6 +545,8 @@ def delete_saved_card(request, card_id):
     except Exception as e:
         messages.error(request, f'An error occurred while deleting the card: {e}')
     return redirect('profile')
+
+
 
 
 
@@ -422,122 +581,173 @@ def product_var(request, product_id):
 
 
 
+
+
+from decimal import Decimal
+from django.db.models import F
+
 @login_required
-def cart(request):
-    try:
-        # Get the user's cart or create one if it doesn't exist
-        cart, created = cart_Wishlist.objects.get_or_create(
-            user=request.user,
-            defaults={'cart': json.dumps([]), 'wishlist': json.dumps([])}
-        )
-        
-        # Get the list of variant IDs from the cart
-        cart_items = json.loads(cart.cart)
-        
-        # Get all product variants that are in the cart
-        variants = ProductVariant.objects.filter(id__in=cart_items)
-        
-        # Create a dictionary with quantities for each variant
-        variant_quantities = {}
-        for variant_id in cart_items:
-            variant_quantities[str(variant_id)] = cart_items.count(variant_id)
-        
-        # Calculate total price
-        total_price = sum(variant.price * variant_quantities[str(variant.id)] for variant in variants)
-        
-        context = {
-            'cart_items': variants,
-            'variant_quantities': variant_quantities,
-            'total_price': total_price,
-            'cart_count': len(cart_items),
+def cart_page(request):
+    cart_obj, _ = Cart.objects.get_or_create(user=request.user)
+    variant_ids = cart_obj.get_cart_items()
+    quantities = cart_obj.get_quantities()
+
+    variants = ProductVariant.objects.filter(id__in=variant_ids).select_related('product__seller')
+
+
+    available_items = []
+    unavailable_items = []
+    cart_subtotal = Decimal('0.00')
+
+    for variant in variants:
+        qty = int(quantities.get(str(variant.id), 1))
+        item = {
+            'variant': variant,
+            'quantity': qty,
         }
-        
-    except Exception as e:
-        messages.error(request, f"Error loading your cart: {str(e)}")
-        context = {
-            'cart_items': [],
-            'variant_quantities': {},
-            'total_price': 0,
-            'cart_count': 0,
-        }
-    
-    return render(request, 'ZYLO_WEB/cart.html', context)
+
+        # Check availability
+        is_in_stock = variant.stock > 0
+        is_on_sale = variant.on_sale  # FIX: use product's `on_sale`
+
+        if is_in_stock and is_on_sale:
+            total_price = variant.price * qty
+            item['total_price'] = round(total_price, 2)
+            cart_subtotal += total_price
+            available_items.append(item)
+        else:
+            reasons = []
+            if not is_in_stock:
+                reasons.append("Out of Stock")
+            if not is_on_sale:
+                reasons.append("Not on Sale")
+            item['reasons'] = reasons
+            unavailable_items.append(item)
+
+    return render(request, 'ZYLO_WEB/cart.html', {
+        'available_items': available_items,
+        'unavailable_items': unavailable_items,
+        'cart_subtotal': round(cart_subtotal, 2),
+        'cart_items_count': len(available_items),
+    })
+
+
+
+
+
+
+
+
+
+
 
 @login_required
 def add_to_cart(request, variant_id):
     variant = get_object_or_404(ProductVariant, id=variant_id)
-    
-    try:
-        # Get or create cart for user
-        cart, created = cart_Wishlist.objects.get_or_create(
-            user=request.user,
-            defaults={'cart': json.dumps([]), 'wishlist': json.dumps([])}
-        )
-        
-        # Load current cart items
-        cart_items = json.loads(cart.cart)
-        
-        # Add the new variant ID
-        cart_items.append(variant_id)
-        
-        # Save back to database
-        cart.cart = json.dumps(cart_items)
-        cart.save()
-        
-        messages.success(request, f'{variant.product.name} added to your cart')
-    
-    except Exception as e:
-        messages.error(request, f'Error adding item to cart: {str(e)}')
-    
+    cart_obj, _ = Cart.objects.get_or_create(user=request.user)
+
+    if cart_obj.add_to_cart(variant.id):
+        messages.success(request, f"{variant.product.name} added to cart.")
+    else:
+        messages.info(request, f"{variant.product.name} is already in your cart.")
+
     return redirect('cart')
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 @login_required
 def remove_from_cart(request, variant_id):
-    try:
-        cart = cart_Wishlist.objects.get(user=request.user)
-        cart_items = json.loads(cart.cart)
-        
-        # Remove all occurrences of this variant (if you want to remove just one, use cart_items.remove(variant_id) once)
-        cart_items = [item for item in cart_items if item != variant_id]
-        
-        cart.cart = json.dumps(cart_items)
-        cart.save()
-        
-        messages.success(request, 'Item removed from your cart')
-    
-    except cart_Wishlist.DoesNotExist:
-        messages.warning(request, 'Your cart is empty')
-    except Exception as e:
-        messages.error(request, f'Error removing item: {str(e)}')
-    
-    return redirect('cart')
+    variant = get_object_or_404(ProductVariant, id=variant_id)
+    cart_obj = get_object_or_404(Cart, user=request.user)
+
+    if cart_obj.remove_from_cart(variant.id):
+        # Also remove quantity from session
+        quantities = request.session.get('cart_quantities', {})
+        if str(variant.id) in quantities:
+            del quantities[str(variant.id)]
+            request.session['cart_quantities'] = quantities
+        messages.success(request, f"{variant.product.name} removed from your cart.")
+    else:
+        messages.info(request, f"{variant.product.name} was not in your cart.")
+
+    return redirect(request.META.get('HTTP_REFERER', '/'))
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 @login_required
-def update_quantity(request, variant_id):
+def ajax_update_cart_quantity(request):
     if request.method == 'POST':
-        try:
-            new_quantity = int(request.POST.get('quantity', 1))
-            cart = cart_Wishlist.objects.get(user=request.user)
-            cart_items = json.loads(cart.cart)
-            
-            # Remove all existing instances
-            cart_items = [item for item in cart_items if item != variant_id]
-            
-            # Add the correct number of items
-            cart_items.extend([variant_id] * new_quantity)
-            
-            cart.cart = json.dumps(cart_items)
-            cart.save()
-            
-            messages.success(request, 'Quantity updated successfully')
+        variant_id = request.POST.get('variant_id')
+        action = request.POST.get('action')
         
-        except ValueError:
-            messages.error(request, 'Invalid quantity')
-        except Exception as e:
-            messages.error(request, f'Error updating quantity: {str(e)}')
-    
-    return redirect('cart')
+        try:
+            variant = ProductVariant.objects.select_related('product').get(id=variant_id)
+            max_stock = variant.stock
 
+            cart_obj, _ = Cart.objects.get_or_create(user=request.user)
+            quantities = cart_obj.get_quantities()
+            current_qty = int(quantities.get(str(variant_id), 1))
+
+            if action == 'increase' and current_qty < max_stock:
+                current_qty += 1
+            elif action == 'decrease' and current_qty > 1:
+                current_qty -= 1
+
+            # Save updated quantity
+            cart_obj.set_quantity(variant_id, current_qty)
+
+            # Calculate item total only if available
+            is_available = variant.stock > 0 and variant.product.on_sale
+            item_total = round(variant.price * current_qty, 2) if is_available else 0
+
+            # Recalculate subtotal only for available items
+            cart_items = cart_obj.get_cart_items()
+            cart_quantities = cart_obj.get_quantities()
+            subtotal = 0
+
+            variants = ProductVariant.objects.filter(id__in=cart_items).select_related('product')
+            for v in variants:
+                if v.stock > 0 and v.on_sale:
+                    qty = int(cart_quantities.get(str(v.id), 1))
+                    subtotal += v.price * qty
+
+            return JsonResponse({
+                'success': True,
+                'quantity': current_qty,
+                'stock': variant.stock,
+                'item_total': f"{item_total:.2f}",
+                'cart_subtotal': f"{subtotal:.2f}",
+                'cart_count': len([v for v in variants if v.stock > 0 and v.product.on_sale])
+            })
+
+        except ProductVariant.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Variant not found'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
 
 
 
@@ -547,65 +757,69 @@ def update_quantity(request, variant_id):
 
 @login_required
 def wishlist_view(request):
-    try:
-        # Get or create user's wishlist
-        wishlist, created = cart_Wishlist.objects.get_or_create(
-            user=request.user,
-            defaults={'wishlist': json.dumps([]), 'cart': json.dumps([])}
-        )
-        
-        # Get wishlist items
-        wishlist_items = json.loads(wishlist.wishlist)
-        variants = ProductVariant.objects.filter(id__in=wishlist_items)
-        
-        context = {
-            'wishlist_items': variants,
-            'wishlist_count': len(wishlist_items),
-        }
-        
-    except Exception as e:
-        messages.error(request, f"Error loading wishlist: {str(e)}")
-        context = {
-            'wishlist_items': [],
-            'wishlist_count': 0,
-        }
-    
-    return render(request, 'ZYLO_WEB/wishlist.html', context)
+    user = request.user
+    wishlist_obj, created = Wishlist.objects.get_or_create(user=user)
+    variant_ids = wishlist_obj.get_wishlist_items()
+    variants = ProductVariant.objects.filter(id__in=variant_ids)
+    return render(request, 'ZYLO_WEB/wishlist.html', {'variants': variants})
+
+
+
+
+
+
+
+
+
+
+
 
 @login_required
 def add_to_wishlist(request, variant_id):
     variant = get_object_or_404(ProductVariant, id=variant_id)
-    
-    try:
-        # Get or create wishlist record
-        wishlist, created = cart_Wishlist.objects.get_or_create(
-            user=request.user,
-            defaults={'wishlist': json.dumps([]), 'cart': json.dumps([])}
-        )
-        
-        if wishlist.add_to_wishlist(variant_id):
-            messages.success(request, f'{variant.product.name} added to wishlist')
-        else:
-            messages.info(request, f'{variant.product.name} is already in your wishlist')
-    
-    except Exception as e:
-        messages.error(request, f'Error adding to wishlist: {str(e)}')
-    
-    return redirect(request.META.get('HTTP_REFERER', 'wishlist_view'))
+    user = request.user
+
+    wishlist_obj, created = Wishlist.objects.get_or_create(user=user)
+    added = wishlist_obj.add_to_wishlist(variant.id)
+
+    if added:
+        messages.success(request, "Item added to wishlist.")
+    else:
+        messages.info(request, "Item is already in your wishlist.")
+
+    # Redirect back to the same page
+    return redirect(request.META.get('HTTP_REFERER', '/'))
+
+
+
+
+
+
+
+
+
+
 
 @login_required
 def remove_from_wishlist(request, variant_id):
-    try:
-        wishlist = cart_Wishlist.objects.get(user=request.user)
-        if wishlist.remove_from_wishlist(variant_id):
-            messages.success(request, 'Item removed from wishlist')
-        else:
-            messages.warning(request, 'Item not found in wishlist')
-    except cart_Wishlist.DoesNotExist:
-        messages.warning(request, 'Your wishlist is empty')
-    except Exception as e:
-        messages.error(request, f'Error removing item: {str(e)}')
-    return redirect(request.META.get('HTTP_REFERER', 'wishlist_view'))
+    variant = get_object_or_404(ProductVariant, id=variant_id)
+    wishlist_obj, created = Wishlist.objects.get_or_create(user=request.user)
+
+    removed = wishlist_obj.remove_from_wishlist(variant.id)
+
+    if removed:
+        # Optionally add a success message
+        from django.contrib import messages
+        messages.success(request, "Item removed from wishlist.")
+    else:
+        messages.info(request, "Item was not in your wishlist.")
+
+    # Redirect back to the same page
+    return redirect(request.META.get('HTTP_REFERER', '/wishlist/'))
+
+
+
+
 
 
 
@@ -625,10 +839,22 @@ def category(request, category_id):
 
 
 
+
+
+
+
+
+
+
+
 def subcategory(request, subcategory_id,name):
     products = Product.objects.filter(subcategory=subcategory_id)\
         .select_related('seller').prefetch_related('variants')# Single optimized query to get all required data
     return render(request, 'ZYLO_WEB/subcategory.html',{'products':products,'name':name})
+
+
+
+
 
 
 
@@ -650,4 +876,59 @@ def store_preview(request, store_id):
         'store': store,
         'products': products,
         'categories': categories
+    })
+
+
+
+
+
+
+
+
+
+
+@login_required
+def account_settings(request):
+    user = request.user
+    last_login = user.last_login
+
+    password_form = CustomPasswordChangeForm(user)
+    deletion_form = AccountDeletionForm()
+
+    if request.method == 'POST':
+        if 'change_password' in request.POST:
+            password_form = CustomPasswordChangeForm(user, request.POST)
+            if password_form.is_valid():
+                password_form.save()
+                update_session_auth_hash(request, user)
+                messages.success(request, 'Password changed successfully.')
+                return redirect('account_settings')
+            else:
+                messages.error(request, 'Please correct the errors below.')
+
+        elif 'delete_account' in request.POST:
+            deletion_form = AccountDeletionForm(request.POST)
+            if deletion_form.is_valid():
+                email = deletion_form.cleaned_data['email']
+                password = deletion_form.cleaned_data['password']
+
+                if email != user.email:
+                    messages.error(request, "The email you entered doesn't match your account.")
+                else:
+                    authenticated_user = authenticate(username=user.username, password=password)
+                    if authenticated_user:
+                        if SellerProfile.objects.filter(user=user).exists():
+                            messages.error(request, "Account deletion is restricted for registered sellers.")
+                        else:
+                            user.delete()
+                            logout(request)
+                            messages.success(request, 'Your account has been deleted.')
+                            return redirect('home')
+                    else:
+                        messages.error(request, "Invalid password. Please try again.")
+
+    return render(request, 'ZYLO_WEB/settings.html', {
+        'form': password_form,
+        'last_login': last_login,
+        'deletion_form': deletion_form
     })
