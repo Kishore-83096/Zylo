@@ -185,6 +185,7 @@ class ProductVariantForm(forms.ModelForm):
         model = ProductVariant
         fields = [
             'product',
+            'variant_name',
             'model_name',
             'color',
             'color_hex',
@@ -205,6 +206,7 @@ class ProductVariantForm(forms.ModelForm):
         }
         help_texts = {
             'product': 'Choose the main product to which this variant belongs.',
+            'variant_name': "Required:The display name of this variant (e.g., 'Productname(product name) or series name + color and size (Black 256GB)').",
             'model_name': 'Optional: A specific model name for this variant.',
             'color': 'E.g., Red, Blue, Black.',
             'color_hex':'#333',

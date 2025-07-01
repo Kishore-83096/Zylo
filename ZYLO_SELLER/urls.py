@@ -21,4 +21,5 @@ urlpatterns = [
     path('update_on_sale/<int:variant_id>/', views.update_on_sale, name='update_on_sale'),
     path('update_variant/<int:variant_id>/', views.update_variant, name='updatevariant'),
     path('delete-variant/<int:variant_id>/', views.delete_variant, name='delete_variant'),
+    path('your-products',views.your_product,name='your_products')
 ]

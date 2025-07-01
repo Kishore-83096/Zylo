@@ -52,12 +52,17 @@
                                             <span class="text-sm text-gray-600">{{ item.variant.product.seller.store_name }}</span>
                                         </div>
                                         <h3 class="text-lg font-semibold text-gray-900">{{ item.variant.product.name }}</h3>
+                                        <h3 class="--text-medium font-semibold text-gray-600">{{ item.variant.model_name }}</h3>
+
                                         <div class="mt-1 flex items-center">
-                                            <span class="inline-block w-4 h-4 rounded-full mr-2 border border-gray-300" 
-                                                  style="background-color: {{ item.variant.color_hex }};"></span>
-                                            <span class="text-sm text-gray-600 mr-3">{{ item.variant.color }}</span>
+                                            {% if item.variant.color_hex and item.variant.color %}
+                                                <span class="inline-block w-4 h-4 rounded-full mr-2 border border-gray-300" 
+                                                    style="background-color: {{ item.variant.color_hex }};"></span>
+                                                <span class="text-sm text-gray-600 mr-3">{{ item.variant.color }}</span>
+                                            {% endif %}
                                             <span class="text-sm text-gray-600">Size: {{ item.variant.size }}</span>
                                         </div>
+
                                     </div>
                                     <div class="mt-2 sm:mt-0">
                                         <p class="text-lg font-semibold text-gray-900" data-item-price="{{ item.variant.id }}">₹{{ item.variant.price }}</p>

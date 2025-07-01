@@ -84,15 +84,28 @@
                             <!-- Variant Details -->
                             <div class="variant-details flex-grow">
                                 <div class="variant-attributes flex flex-wrap items-center gap-3 mb-2">
-                                    <span class="variant-color flex items-center gap-1.5 text-sm font-medium">
-                                        <span class="color-swatch w-4 h-4 rounded-full border border-gray-300" 
-                                              style="background-color:{{ variant.color_hex|default:'#cccccc' }}"></span>
-                                        {{ variant.color }}
-                                    </span>
-                                    <span class="variant-size bg-gray-100 text-gray-800 px-2 py-0.5 rounded text-xs font-medium">
-                                        {{ variant.size }}
-                                    </span>
+                                    {% if variant.color_hex or variant.color %}
+                                        <span class="variant-color flex items-center gap-1.5 text-sm font-medium">
+                                            {% if variant.color_hex %}
+                                                <span class="color-swatch w-4 h-4 rounded-full border border-gray-300" 
+                                                    style="background-color:{{ variant.color_hex }}"></span>
+                                            {% endif %}
+                                            {{ variant.color }} - 
+                                            {{ variant.model_name }}
+                                        </span>
+                                    {% else %}
+                                        <span class="variant-color text-sm font-medium">
+                                            {{ variant.model_name }}
+                                        </span>
+                                    {% endif %}
+
+                                    {% if variant.size %}
+                                        <span class="variant-size bg-gray-100 text-gray-800 px-2 py-0.5 rounded text-xs font-medium">
+                                            {{ variant.size }}
+                                        </span>
+                                    {% endif %}
                                 </div>
+
                                 
                                 <!-- Pricing -->
                                 <div class="variant-pricing flex items-center flex-wrap gap-2 mb-2">

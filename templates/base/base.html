@@ -626,19 +626,21 @@
                 </button>
             </div>
             {% if is_superuser %}
-                <button type="button" class="icon-btn superuser-btn" aria-label="Superuser Dashboard" onclick="location.href='{% url 'admin:index' %}'">
+                <a href="{% url 'admin:index' %}" target="_blank" class="icon-btn superuser-btn" aria-label="Superuser Dashboard">
                     <i class="fas fa-user-shield"></i>
-                </button>
+                </a>
             {% endif %}
+
             {% if is_store_approved %}
-                <button type="button" class="icon-btn superuser-btn" aria-label="Store Dashboard" onclick="location.href='{% url 'store' %}'">
+                <a href="{% url 'store' %}" target="_blank" class="icon-btn superuser-btn" aria-label="Store Dashboard">
                     {% if logo %}
                         <img src="{{ logo.image.url }}" alt="Store Logo" class="store-nav-img">
                     {% else %}
                         <i class="fas fa-store"></i>
                     {% endif %}
-                </button>
+                </a>
             {% endif %}
+
             <button type="button" class="icon-btn" aria-label="Shopping Cart" onclick="location.href='{% url 'cart' %}'">
                 <i class="fas fa-shopping-cart"></i>
             </button>

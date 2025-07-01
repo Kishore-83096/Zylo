@@ -82,7 +82,7 @@
             <div class="content-section">
                 <div class="section-header">
                     <h2><i class="fas fa-boxes"></i> Recent Products</h2>
-                    <a href="{% url 'product_management' %}" class="view-all">View All</a>
+                    <a href="{% url 'your_products' %}" class="view-all">View All</a>
                 </div>
                 <div class="products-grid">
                     {% for product in user_products|slice:":6" %}

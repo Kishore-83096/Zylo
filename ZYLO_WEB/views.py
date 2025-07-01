@@ -221,7 +221,6 @@ def profile(request):
             contact_information, _ = ContactInformation.objects.get_or_create(user=user)
             context['contact_information'] = contact_information
             context['contact_info_form'] = ContactInformationForm(instance=contact_information)
-            print(context['contact_info_form'])
     except Exception as e:
         logger.error(f"Error fetching/creating ContactInformation for user {user.id}: {e}")
         # Forms for contact information will remain None or default, handled in template
@@ -229,7 +228,6 @@ def profile(request):
     # --- Fetch Other Related Objects ---
     try:
         context['saved_addresses'] = SavedAddress.objects.filter(user=user)
-        print(context['saved_addresses'])
     except Exception as e:
         logger.error(f"Error fetching SavedAddress for user {user.id}: {e}")
 
@@ -339,18 +337,22 @@ def profile_picture_edit(request):
 
 @login_required
 def contact_info_edit(request):
-    contact_information, created = ContactInformation.objects.get_or_create(user=request.user)
+    try:
+        contact_information = ContactInformation.objects.get(user=request.user)
+    except ContactInformation.DoesNotExist:
+        contact_information = None
 
     if request.method == 'POST':
         contact_info_form = ContactInformationForm(request.POST, instance=contact_information)
         if contact_info_form.is_valid():
+            # If contact_information was None, a new one will be created now
+            contact_info_form.instance.user = request.user  # Set user before saving
             contact_info_form.save()
             messages.success(request, 'Contact information updated successfully!')
-            return redirect('profile')
         else:
             messages.error(request, 'Error updating contact information. Please check your input.')
             print("Contact info form errors:", contact_info_form.errors)
-            return redirect('profile')
+        return redirect('profile')
     else:
         return redirect('profile')
 

@@ -388,6 +388,14 @@ class ProductVariant(models.Model):
         related_name='variants',
         help_text="The parent product this variant belongs to."
     )
+
+    variant_name = models.CharField(
+        max_length=100,
+        help_text="The display name of this variant (e.g., 'Productname(product name) or series name + color and size (Black 256GB)').",
+        null=True,
+        blank=True,
+    )
+
     model_name = models.CharField(
         max_length=100,
         blank=True,

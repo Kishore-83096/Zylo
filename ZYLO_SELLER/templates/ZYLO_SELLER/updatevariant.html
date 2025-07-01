@@ -285,7 +285,13 @@
                 </div>
                 <input type="hidden" name="product" value="{% if form.instance.product %}{{ form.instance.product.id }}{% endif %}">
             </div>
-            
+            <div class="form-group">
+                <label for="{{ form.variant_name.id_for_label }}">Variant Name</label>
+                {{ form.variant_name }}
+                {% if form.variant_name.errors %}
+                    <div class="error-message">{{ form.variant_name.errors }}</div>
+                {% endif %}
+            </div>
             <!-- Model Name -->
             <div class="form-group">
                 <label for="{{ form.model_name.id_for_label }}">Model Name</label>

@@ -59,13 +59,16 @@
                         {% for variant in product.variants.all|slice:":3" %}
                         <div class="variant">
                             <span class="variant-size">{{ variant.size }}</span>
-                            <span class="color-dot" style="background-color: {{ variant.color_hex|default:'#ddd' }}"></span>
+                            {% if variant.color_hex %}
+                                <span class="color-dot" style="background-color: {{ variant.color_hex }}"></span>
+                            {% endif %}
                         </div>
                         {% endfor %}
                         {% if product.variants.count > 3 %}
                             <div class="variant-more">+{{ product.variants.count|add:"-3" }} more</div>
                         {% endif %}
                     </div>
+
                 </div>
             </a>
         </div>

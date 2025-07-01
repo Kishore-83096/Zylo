@@ -483,32 +483,29 @@ def update_product(request, product_id):
 
 
 
+from django.shortcuts import redirect
+
 @login_required
 def delete_product(request, product_id):
-    print("Delete product view called")  # Debugging log
     try:
-        print(f"Attempting to delete product with ID: {product_id}")  # Debugging log
-        seller_profile = SellerProfile.objects.get(user=request.user)  # Fetch the seller profile of the logged-in user
-        print(f"Seller profile found: {seller_profile.store_name}")  # Debugging log
+        seller_profile = SellerProfile.objects.get(user=request.user)
     except SellerProfile.DoesNotExist:
-        messages.error(request, 'You must have a seller profile to delete a product.')  # Error message if no seller profile exists
-        return redirect('sellerreg')  # Redirect to seller registration page
+        messages.error(request, 'You must have a seller profile to delete a product.')
+        return redirect('sellerreg')
 
-    product = get_object_or_404(Product, id=product_id, seller=seller_profile)  # Fetch the product and ensure it belongs to the logged-in seller
-    print(f"Product found: {product.name}, Seller: {product.seller}")  # Debugging log
+    product = get_object_or_404(Product, id=product_id, seller=seller_profile)
 
-    if request.method == 'POST':  # Check if the request method is POST
+    if request.method == 'POST':
         try:
-            product.delete()  # Delete the product
-            messages.success(request, 'Product deleted successfully!')  # Success message
-            return HttpResponseRedirect(reverse('product_management'))  # Redirect to product management page
+            product.delete()
+            messages.success(request, 'Product deleted successfully!')
         except Exception as e:
-            print(f"Error deleting product: {e}")  # Debugging log for errors
-            messages.error(request, 'An error occurred while deleting the product.')  # Error message
-            return redirect('product_management')
+            print(f"Error deleting product: {e}")
+            messages.error(request, 'An error occurred while deleting the product.')
 
-    print("Request method is not POST")  # Debugging log
-    return redirect('product_management')  # Redirect to product management page if not a POST request
+    # Redirect to previous page (same page)
+    return redirect(request.META.get('HTTP_REFERER', 'product_management'))
+
 
 
 
@@ -536,6 +533,7 @@ def variantform(request):
             messages.error(request, 'Please correct the errors below.')
     else:
         form = ProductVariantForm(seller=seller_profile)  # Pass the seller to the form for GET requests
+        print(form)
 
     return render(request, 'ZYLO_SELLER/variantsform.html', {
         'form': form,
@@ -671,3 +669,15 @@ def delete_variant(request, variant_id):
 
 
 
+
+
+
+
+
+
+@login_required
+def your_product(request):
+    seller_profile = SellerProfile.objects.get(user=request.user)
+    products = Product.objects.filter(seller=seller_profile)
+
+    return render(request, 'ZYLO_SELLER/your_products.html', {'your_products': products})
