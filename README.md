@@ -59,11 +59,3 @@ Zylo is an **ongoing e-commerce platform** where users can buy and sell products
 
 ---
 
-
-
----
-
-## 🙌 Acknowledgements
-
-- Django documentation  
-- Bootstrap & Tailwind CSS (optional future enhancement)
